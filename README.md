@@ -1,5 +1,6 @@
 # se-manifest-schema
 
+[![PyPI](https://img.shields.io/pypi/v/se-manifest-schema?logo=pypi&label=pypi)](https://pypi.org/project/se-manifest-schema/)
 [![Docs Site](https://img.shields.io/badge/docs-site-blue?logo=github)](https://structural-explainability.github.io/se-manifest-schema/)
 [![Repo](https://img.shields.io/badge/repo-GitHub-black?logo=github)](https://github.com/structural-explainability/se-manifest-schema)
 [![Python 3.15+](https://img.shields.io/badge/python-3.15%2B-blue?logo=python)](./pyproject.toml)
@@ -7,6 +8,7 @@
 
 [![CI](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/ci-python-zensical.yml/badge.svg?branch=main)](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/ci-python-zensical.yml)
 [![Docs](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/deploy-zensical.yml/badge.svg?branch=main)](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/deploy-zensical.yml)
+[![Release](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/release-pypi.yml/badge.svg?branch=main)](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/release-pypi.yml)
 [![Links](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/links.yml/badge.svg?branch=main)](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/links.yml)
 
 > Structural Explainability (SE) Manifest Schema

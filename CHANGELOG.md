@@ -86,7 +86,7 @@ uv run python -m se_manifest_schema validate --strict --require-tag
 ```
 
 Confirms CITATION.cff version matches the pushed git tag.
-Run this after `git push origin vX.Y.Z` — it will fail before that point.
+Run this after `git push origin vX.Y.Z`; it will fail before that point.
 
 ## Only As Needed (delete a tag)
 
