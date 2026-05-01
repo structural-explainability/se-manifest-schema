@@ -4,7 +4,7 @@
 # ============================================================
 
 schema = "se-manifest-2"
-schema_url = "https://github.com/structural-explainability/se-manifest-schema"
+schema_url = "https://raw.githubusercontent.com/structural-explainability/se-manifest-schema/v0.2.0/manifest-schema.toml"
 
 # === Identity ===
 

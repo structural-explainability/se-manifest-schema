@@ -1,7 +1,7 @@
 # ============================================================
 # pyproject.toml (Python project configuration)
 # ============================================================
-# Updated: 2026-04-15
+# Updated: 2026-04-30
 # REQ.PYTHON: Python projects MUST include pyproject.toml as the single source of truth.
 # WHY: Centralizes project configuration.
 # CUSTOM: Update identity and build tool src folders.
@@ -15,26 +15,56 @@ name = "se-manifest-schema" # Package distribution name (lowercase and dashes).
 readme = "README.md"
 requires-python = ">=3.15"
 dynamic = ["version"] # WHY: Version is computed from git tags at build time (see [tool.hatch.version] below).
+description = "Canonical SE_MANIFEST.toml schema and validation for the Structural Explainability ecosystem."
+license = { file = "LICENSE" }
+authors = [
+    { name = "Structural Explainability", email = "se@structural-explainability.org" },
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.15",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Quality Assurance",
+    "Typing :: Typed",
+]
+keywords = [
+    "structural-explainability",
+    "manifest",
+    "schema",
+    "validation",
+    "toml",
+]
+dependencies = [
+    "PyYAML",  # WHY: Required to read version from CITATION.cff during sync.
+]
 
-dependencies = []
 
 [project.optional-dependencies]
 # WHY: Optional dependency groups keep the core install clean and focused.
 dev = [
     # REQ.DEV.DEPS: External packages used for linting, testing, type checking, etc.
     "build", # WHY: build tool required for packaging and publishing.
+    "packaging",  # WHY: Required by validate-pyproject for dependency and license validation.
     "pre-commit",
     "pyright",
     "pytest",
     "pytest-cov",
     "ruff",
-    "PyYAML ", # WHY: Used for testing manifest parsing logic with YAML fixtures.
+    "twine",  # WHY: Required for artifact validation (twine check dist/*).
 ]
 
 docs = [
     # REQ.DOCS.DEPS: External packages used to generate project documentation.
     "zensical==0.0.37", # WHY: Link resolution fails with newer versions; pinning to a known working version.,
 ]
+
+[project.urls]
+Homepage = "https://github.com/structural-explainability/se-manifest-schema"
+Repository = "https://github.com/structural-explainability/se-manifest-schema"
+Documentation = "https://structural-explainability.github.io/se-manifest-schema/"
 
 # ============================================================
 # SECTION 2: TOOL CONFIGURATION (Professional basics)
@@ -156,6 +186,7 @@ version-file = "src/se_manifest_schema/_version.py"
 [tool.hatch.build.targets.wheel]
 # CUSTOM: Must match src/ folders.
 packages = ["src/se_manifest_schema"]  # REQ.PACKAGES: Discovery rooted at src/.
+artifacts = ["manifest-schema.toml"] # REQ.ARTIFACTS: Include manifest schema as a package data artifact.
 
 [tool.hatch.version]
 # WHY: Version derived from git tags at build time

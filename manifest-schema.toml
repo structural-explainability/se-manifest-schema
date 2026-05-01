@@ -643,6 +643,7 @@ required_sections = [
     "layer",
     "depends",
     "provides",
+    "exports",
     "scope",
     "citation",
     "traceability",

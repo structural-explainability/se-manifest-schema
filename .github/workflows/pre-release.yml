@@ -1,0 +1,107 @@
+# ============================================================
+# .github/workflows/pre-release.yml (SE Manifest Schema)
+# ============================================================
+# VARIANT: se-manifest-schema
+# Updated: 2026-04-30
+
+# WHY-FILE: Pre-release checks and build.
+# REQ: Trigger on version tags like v1.2.3.
+
+name: Pre-Release Checks and Build
+
+on:
+  workflow_call: # WHY: Allow calling from PyPI repos in this org.
+  workflow_dispatch: # WHY: Allow manual trigger for pre-release checks if needed.
+
+permissions: # WHY: Use least privileges required.
+  contents: write   # WHY: Create GitHub Release.
+  pages: write      # WHY: Required to deploy to GitHub Pages.
+
+env:
+  PYTHONUNBUFFERED: "1"       # WHY: Real-time logging.
+  PYTHONIOENCODING: "utf-8"   # WHY: Ensure UTF-8 encoding for international characters.
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false  # WHY: Never cancel a release in progress.
+
+jobs:
+  pre-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30 # WHY: Prevent hanging jobs. If over, it is likely stuck.
+    environment: pypi  # WHY: Use 'pypi' environment for PyPI publishing; ignore warnings.
+    env:
+      UV_PYTHON: "3.15" # WHY: Set Python version for all steps.
+
+    steps:
+
+      # === ASSEMBLE ===
+
+      - name: A1) Checkout repository with full history and tags
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0   # WHY: hatch-vcs needs full history to derive version from tags.
+          fetch-tags: true
+          ref: ${{ github.ref }}
+
+      - name: A2) Configure GitHub Pages
+        # WHY: Sets Pages metadata for deployments.
+        uses: actions/configure-pages@v6
+
+      - name: A3) Install uv (with caching and uv.lock awareness)
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: A4) Install Python ${{ env.UV_PYTHON }}
+        run: uv python install ${{ env.UV_PYTHON }}
+
+      - name: A5) Display versions
+        run: |
+          uv --version
+          uv run python --version
+
+      # === BASELINE CHECKS (build while git is pristine) ===
+
+      - name: B1) Extract plain version from tag (no leading 'v')
+        id: ver
+        shell: bash
+        run: echo "plain=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: B2) Verify git is clean before build
+        run: |
+          echo "Git status:"
+          git status --short
+          echo "Git describe:"
+          git describe --tags --always --dirty
+          if [[ $(git status --porcelain) ]]; then
+            echo "ERROR: Git tree is dirty before build!"
+            exit 1
+          fi
+
+      - name: B3) Build sdist + wheel
+        # WHY: hatch-vcs derives version from git tag; build before uv sync
+        # to avoid working tree changes invalidating the clean check.
+        run: uv build
+
+      - name: B4) Ensure built artifact version matches tag
+        shell: bash
+        run: |
+          set -e
+          TAG="${{ steps.ver.outputs.plain }}"
+          echo "Tag version: $TAG"
+          ls dist
+          if ! ls dist/*"$TAG"*.whl dist/*"$TAG"*.tar.gz >/dev/null 2>&1; then
+            echo "ERROR: Built artifact version does not match tag $TAG"
+            exit 1
+          fi
+          echo "Artifact version matches tag."
+
+      # === CHECKS (after build, may modify working tree) ===
+
+      - name: C1) Sync to install all dependencies
+        run: uv sync --extra dev --extra docs --upgrade
+
+      - name: C2) Validate manifest schema and SE_MANIFEST.toml
+        run: uv run python -m se_manifest_schema validate --strict --require-tag

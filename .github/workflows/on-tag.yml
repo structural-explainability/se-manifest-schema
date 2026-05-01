@@ -1,0 +1,26 @@
+# ============================================================
+# .github/workflows/on-tag.yml
+# ============================================================
+# Updated: 2026-04-30
+
+# REQ: Trigger on version tags like v1.2.3.
+# WHY-FILE: Do repo-specific pre-release checks and then release.
+
+name: On Tag
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  pre-release:
+    uses: ./.github/workflows/pre-release.yml
+
+  release:
+    needs: pre-release
+    uses: ./.github/workflows/release-pypi.yml
