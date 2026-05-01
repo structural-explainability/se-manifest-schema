@@ -69,7 +69,7 @@ uv run python -m zensical build
 ```shell
 git add -A
 git commit -m "Release X.Y.Z"
-git push origin main
+git push -u origin main
 ```
 
 Verify actions run on GitHub. After success:
