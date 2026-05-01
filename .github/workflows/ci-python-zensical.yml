@@ -1,7 +1,7 @@
 # ============================================================
-# .github/workflows/ci-python-zensical.yml (Continuous Integration)
+# .github/workflows/ci-python-zensical.yml (Python src + Zensical docs)
 # ============================================================
-# Updated: 2026-04-27 REPO SPECIFIC Execution section
+# Updated: 2026-04-30
 #
 # WHY-FILE: Validate repository hygiene, Python correctness, and documentation builds.
 # REQ: CI MUST NOT introduce arbitrary rules that are not reproducible locally.
@@ -14,6 +14,7 @@
 #   - ruff-check (lint with autofix)
 #   - ruff-format (formatting)
 #   - trailing whitespace, line endings, JSON/TOML/YAML syntax, large files
+#   - repo-specific validation (defined in .pre-commit-config.yaml)
 #
 # WHY SEPARATE: These tools are slower, require the full environment,
 # or produce output worth seeing in CI logs independently.
@@ -122,14 +123,3 @@ jobs:
         # OBS: Build only; deployment is handled by a separate workflow if needed.
         # OBS: Conditional on zensical.toml so this workflow is reusable across
         #      repos that may not yet have docs configured.
-
-      # ============================================================
-      # E) EXECUTION: Module entrypoints and validation
-      # ============================================================
-
-      - name: E1) Validate SE SE Manifest Schema
-        run: uv run python -m se_manifest_schema validate
-        # WHY: Ensures all constitutional registries remain internally consistent.
-        # WHY: Catches missing class definitions, dependency rules, naming patterns,
-        #      manifest schema entries, and repo requirement coverage.
-        # OBS: This is the authoritative integrity check for the SE ecosystem.

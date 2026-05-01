@@ -88,16 +88,11 @@ uv run python -m se_manifest_schema validate --strict --require-tag
 Confirms CITATION.cff version matches the pushed git tag.
 Run this after `git push origin vX.Y.Z` — it will fail before that point.
 
-Sample commands:
+## Only As Needed (delete a tag)
 
 ```shell
-# as needed
-git tag -d v0.2.0
-git push origin :refs/tags/v0.2.0
-
-# new tag / release
-git tag v0.2.0 -m "0.2.0"
-git push origin v0.2.0
+git tag -d vX.Z.Y
+git push origin :refs/tags/vX.Z.Y
 ```
 
 [Unreleased]: https://github.com/structural-explainability/se-manifest-schema/compare/v0.2.0...HEAD

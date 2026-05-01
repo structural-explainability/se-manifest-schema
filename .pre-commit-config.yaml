@@ -36,7 +36,6 @@ exclude: |
     build/|
     coverage\.xml|
     dist/|
-    external/se-formal-contract/|
     htmlcov/|
     lake-packages/|
     node_modules/|
@@ -66,9 +65,9 @@ repos:
       # === PRE-COMMIT: CHECK DATA FILE FORMATS ===
 
       - id: check-json
-        name: B1) Validate JSON syntax (except .vscode/ and external/)
-        # WHY: VSCode settings may include comments; external/ contains submodules not owned by this repo.
-        exclude: ^(\.vscode/.*\.json|external/.*\.json)$
+        name: B1) Validate JSON syntax (except .vscode/)
+        # WHY: VSCode settings may include comments.
+        exclude: ^(\.vscode/.*\.json)$
 
       - id: check-toml
         name: B2) Validate TOML syntax
@@ -117,8 +116,6 @@ repos:
         pass_filenames: false
         always_run: true
 
-  - repo: local
-    hooks:
       - id: markdownlint
         name: E2) Markdown lint
         language: system
