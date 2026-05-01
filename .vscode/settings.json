@@ -1,0 +1,37 @@
+// ============================================================
+// .vscode/settings.json (Structural Explainability)
+// ============================================================
+// Updated 2026-04-22
+// NOTE: Comments are not allowed in standard JSON files,
+// but Microsoft allows them in their .vscode config files.
+{
+  "editor.formatOnSave": false,
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "[markdown]": {
+    //prettier for markdown files (e.g., README.md)
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "[toml]": {
+    "editor.defaultFormatter": "tamasfe.even-better-toml"
+  },
+  "[github-actions-workflow]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "yaml.schemas": {
+    "https://json.schemastore.org/github-workflow.json": [
+      ".github/workflows/*.yml",
+      ".github/workflows/*.yaml"
+    ]
+  }
+}

@@ -1,0 +1,69 @@
+# ============================================================
+# SE_MANIFEST.toml (Repository Declaration)
+# se-manifest-schema
+# ============================================================
+
+schema = "se-manifest-2"
+schema_url = "https://github.com/structural-explainability/se-manifest-schema"
+
+# === Identity ===
+
+[meta]
+purpose = "Declares the standalone manifest schema repository for the Structural Explainability ecosystem."
+
+[repo]
+name = "se-manifest-schema"
+org = "structural-explainability"
+class = "manifest_schema"
+kind = "foundation"
+status = "active"
+since = "2026"
+summary = "Canonical manifest schema defining SE_MANIFEST.toml structure and validation rules."
+
+[layer]
+space = "schema"
+role = "manifest-schema"
+
+# === Dependencies ===
+
+[depends]
+required = []
+optional = []
+
+# === Provided artifacts ===
+
+[provides]
+artifacts = [
+  "manifest-schema",
+]
+
+[exports]
+manifest_schema = "manifest-schema.toml"
+
+# === Scope ===
+
+[scope]
+includes = [
+  "definition of SE_MANIFEST.toml structure",
+  "definition of manifest sections and fields",
+  "definition of manifest class requirements",
+]
+
+excludes = [
+  "formal contract exports", # se-form-contract
+  "repository dependency law", # se-constitution
+  "operational validation logic", # se-admin / constitution
+  "Lean theorem definitions or proofs", # theory repos
+  "domain-specific data or mappings", # downstream repos
+]
+
+# === Citation ===
+
+[citation]
+cff = "CITATION.cff"
+preferred = "CITATION.cff"
+
+# === Traceability ===
+
+[traceability]
+identifier_map = "none"

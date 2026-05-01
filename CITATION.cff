@@ -1,0 +1,42 @@
+# ============================================================
+# CITATION.cff (How to cite this project)
+# ============================================================
+
+# REQ.UNIVERSAL: Professional open projects SHOULD include this file.
+# USAGE: See https://citation-file-format.github.io/ for details.
+
+cff-version: "1.2.0"
+type: software
+
+title: "Structural Explainability SE Manifest Schema"
+# Set version and date-released to match latest git tag or release.
+version: "0.2.0"
+date-released: "2026-04-30"
+
+authors:
+  - family-names: Case
+    given-names: Denise M.
+    orcid: "https://orcid.org/0000-0001-6165-7389"
+    affiliation: "Northwest Missouri State University, School of Computer Science and Information Systems, Maryville, MO, USA"
+
+repository-code: "https://github.com/structural-explainability/se-manifest-schema"
+url: "https://github.com/structural-explainability/se-manifest-schema"
+
+license: MIT
+
+abstract: >
+  Manifest schema definition for the Structural Explainability (SE) ecosystem.
+  This repository defines the canonical structure and validation rules for
+  SE_MANIFEST.toml across repositories.
+
+keywords:
+  - structural-explainability
+  - manifest-schema
+  - declarative-specification
+  - schema-validation
+  - modular-systems
+  - interoperability
+  - software-architecture
+  - data-driven-rules
+
+message: "If you use this work, please cite it using the metadata in this file."

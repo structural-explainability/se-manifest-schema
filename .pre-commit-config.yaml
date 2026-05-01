@@ -1,0 +1,131 @@
+# ============================================================
+# .pre-commit-config.yaml (SE Manifest Schema)
+# ============================================================
+# VARIANT: se-manifest-schema
+# Updated: 2026-04-30
+
+# Fast, consistent repository hygiene before commit.
+#
+# These hooks complement and do not replace:
+# - .editorconfig
+# - .gitattributes
+# - pyproject.toml
+#
+# Local usage:
+#   uv self update
+#   uvx pre-commit install
+#   uvx pre-commit run --all-files
+#
+# Ruff lint runs before Ruff format in pre-commit so autofixes
+# are formatted in the same pass.
+
+exclude: |
+  (?x)^(
+    \.DS_Store|
+    \.coverage|
+    \.ipynb_checkpoints/|
+    \.mypy_cache/|
+    \.nox/|
+    \.pytest_cache/|
+    \.ruff_cache/|
+    \.tox/|
+    \.venv/|
+    .*\.(egg-info)/|
+    __pycache__/|
+    _minted.*/|
+    build/|
+    coverage\.xml|
+    dist/|
+    external/se-formal-contract/|
+    htmlcov/|
+    lake-packages/|
+    node_modules/|
+    out/|
+    site/
+  )
+
+repos:
+  # === REPO: PRE-COMMIT HOOKS (cross-platform, zero config) ===
+  #
+  # These hooks prevent problems that show up later as:
+  #   - mysterious diffs
+  #   - broken builds on another OS
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      # === PRE-COMMIT: NORMALIZE FILE FORMATTING ===
+
+      - id: trailing-whitespace
+        name: A1) Clean trailing whitespace (per .editorconfig)
+        args: [--markdown-linebreak-ext=md] # Preserves markdown double-space line breaks
+
+      - id: end-of-file-fixer
+        name: A2) End files with a newline (per .gitattributes)
+
+      # === PRE-COMMIT: CHECK DATA FILE FORMATS ===
+
+      - id: check-json
+        name: B1) Validate JSON syntax (except .vscode/ and external/)
+        # WHY: VSCode settings may include comments; external/ contains submodules not owned by this repo.
+        exclude: ^(\.vscode/.*\.json|external/.*\.json)$
+
+      - id: check-toml
+        name: B2) Validate TOML syntax
+
+      - id: check-yaml
+        name: B3) Validate YAML syntax
+        files: \.(yml|yaml)$
+        # WHY: VS Code config files are editor-specific
+        exclude: ^(\.vscode/)
+
+      # === PRE-COMMIT: CHECK FOR COMMON PROBLEMS ===
+
+      - id: check-added-large-files
+        name: C1) Prevent accidental commits of large binaries
+        args: [--maxkb=2000] # WHY: 2MB is a common threshold for large files
+
+      - id: check-merge-conflict
+        name: C2) Prevent committing merge conflicts
+
+      - id: check-case-conflict
+        name: C3) Check for filename case conflicts
+
+  # === REPO: RUFF PRE-COMMIT (for Python code) ===
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.10
+    hooks:
+      - id: ruff-check
+        name: D1) Ruff linter with autofix (runs first in pre-commit)
+        # WHY: Lint fixes run first so formatter sees the corrected code.
+        args: [--fix, --exit-non-zero-on-fix]
+
+      - id: ruff-format
+        name: D2) Ruff formatter (runs after linter fixes)
+        # WHY: Formats whatever structure the linter left behind.
+
+
+  # === EXECUTE: LOCAL VALIDATION ===
+
+  - repo: local
+    hooks:
+      - id: se-manifest-schema-validate
+        name: E1) Validate manifest schema and SE_MANIFEST.toml
+        language: system
+        entry: uv run python -m se_manifest_schema validate --strict
+        pass_filenames: false
+        always_run: true
+
+  - repo: local
+    hooks:
+      - id: markdownlint
+        name: E2) Markdown lint
+        language: system
+        entry: npx markdownlint-cli "**/*.md" --fix
+        pass_filenames: false
+        always_run: true
+
+# === GLOBAL SETTINGS ===
+# ALT: Set fail_fast to true to stop at first failure.
+fail_fast: false # WHY: Run all hooks so all issues are visible at once.

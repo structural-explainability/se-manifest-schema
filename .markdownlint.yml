@@ -1,0 +1,23 @@
+# ============================================================
+# .markdownlint.yml (Markdown linting rules)
+# ============================================================
+# Updated: 2026-04-22 (Structural Explainability)
+# WHY: Enforce consistency without blocking intentional patterns
+#      used in documentation (redirects, badges, collapsible sections).
+
+default: true
+
+MD013:
+  line_length: 100
+  headings: false
+  tables: false
+  code_blocks: false
+
+MD025: false
+
+MD033:
+  allowed_elements:
+    - meta
+    - link
+    - details
+    - summary
