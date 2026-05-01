@@ -126,7 +126,7 @@ jobs:
       # === DEPLOY RELEASE AND DOCS ===
 
       - name: D1) Create GitHub Release and upload artifacts
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ github.ref_name }}
           name: ${{ github.ref_name }}
@@ -159,7 +159,7 @@ jobs:
           fi
 
       - name: D5) Upload Pages artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: site
 
