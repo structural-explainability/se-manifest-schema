@@ -1,20 +1,21 @@
 # ============================================================
-# .github/workflows/release-pypi-shared.yml
-# (Release PyPI + docs via Zensical — shared org workflow)
+# .github/workflows/release-pypi.yml
+# (Release PyPI + docs via Zensical)
 # ============================================================
 # WHY-FILE: Publish a tagged release to PyPI and deploy docs to GitHub Pages.
 # REQ: Trigger ONLY on version tags like v1.2.3.
 # REQ: PyPI project must be configured for Trusted Publishing (OIDC).
 # REQ: uv build must run before anything that modifies the working tree (including uv sync).
 # REQ: Repo Settings -> Pages -> Build and deployment -> Source: GitHub Actions
-# OBS: Called by thin callers in each PyPI repo via workflow_call.
 
 name: Release (PyPI + Zensical docs)
 
 on:
-  workflow_call: # WHY: Allow calling from PyPI repos in this org.
+  push:
+    tags:
+      - "v*.*.*"
 
-permissions: # WHY: Use least privileges required.
+permissions:
   contents: write   # WHY: Create GitHub Release.
   pages: write      # WHY: Required to deploy to GitHub Pages.
   id-token: write   # WHY: PyPI Trusted Publishing (OIDC) + deploy-pages OIDC.
@@ -23,8 +24,17 @@ env:
   PYTHONUNBUFFERED: "1"       # WHY: Real-time logging.
   PYTHONIOENCODING: "utf-8"   # WHY: Ensure UTF-8 encoding for international characters.
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false  # WHY: Never cancel a release in progress.
+
 jobs:
+
+  pre-release:
+    uses: ./.github/workflows/pre-release.yml
+
   build-and-release:
+    needs: pre-release  # WHY: Never publish if pre-release checks fail.
     runs-on: ubuntu-latest
     timeout-minutes: 30 # WHY: Prevent hanging jobs. If over, it is likely stuck.
     environment: pypi  # WHY: Use 'pypi' environment for PyPI publishing; ignore warnings.
@@ -43,7 +53,6 @@ jobs:
           ref: ${{ github.ref }}
 
       - name: A2) Configure GitHub Pages
-        # WHY: Sets Pages metadata for deployments.
         uses: actions/configure-pages@v6
 
       - name: A3) Install uv (with caching and uv.lock awareness)
@@ -79,8 +88,6 @@ jobs:
           fi
 
       - name: B3) Build sdist + wheel
-        # WHY: hatch-vcs derives version from git tag; build before uv sync
-        # to avoid working tree changes invalidating the clean check.
         run: uv build
 
       - name: B4) Ensure built artifact version matches tag
