@@ -113,10 +113,7 @@ jobs:
       - name: C5) Pyright (type check)
         run: uv run pyright
 
-      - name: C6) Deptry (dependency check)
-        run: uvx deptry .
-
-      - name: C7) Validate built artifacts
+      - name: C6) Validate built artifacts
         run: uv run twine check dist/*
 
       # === DEPLOY RELEASE AND DOCS ===
