@@ -245,6 +245,14 @@ required = true
 type = "string"
 required = false
 
+[field.validation.strict_entrypoint]
+type = "string"
+required = false
+
+[field.validation.tag_entrypoint]
+type = "string"
+required = false
+
 [field.naming.pattern]
 type = "string"
 required = false

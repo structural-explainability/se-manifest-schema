@@ -9,6 +9,18 @@ and this project adheres to **[Semantic Versioning](https://semver.org/spec/v2.0
 
 ## [Unreleased]
 
+### Added
+
+```toml
+[field.validation.strict_entrypoint]
+type = "string"
+required = false
+
+[field.validation.tag_entrypoint]
+type = "string"
+required = false
+```
+
 ---
 
 ## [0.2.1] - 2026-04-30
