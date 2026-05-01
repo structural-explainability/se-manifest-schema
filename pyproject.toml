@@ -186,10 +186,10 @@ version-file = "src/se_manifest_schema/_version.py"
 [tool.hatch.build.targets.wheel]
 # CUSTOM: Must match src/ folders.
 packages = ["src/se_manifest_schema"]  # REQ.PACKAGES: Discovery rooted at src/.
-artifacts = ["manifest-schema.toml"] # REQ.ARTIFACTS: Include manifest schema as a package data artifact.
+force-include = {"manifest-schema.toml" = "se_manifest_schema/manifest-schema.toml"}
 
 [tool.hatch.version]
 # WHY: Version derived from git tags at build time
 source = "vcs"
-fallback-version = "0.2.0"              # Used when no git tags present (fresh clone, CI).
+fallback-version = "0.2.1"              # Used when no git tags present (fresh clone, CI).
 tag-pattern = "^(?:v)?(?P<version>\\d+\\.\\d+\\.\\d+)$"

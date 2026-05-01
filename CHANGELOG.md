@@ -11,6 +11,15 @@ and this project adheres to **[Semantic Versioning](https://semver.org/spec/v2.0
 
 ---
 
+## [0.2.1] - 2026-04-30
+
+### Added
+
+In pyproject.toml, added:
+force-include = {"manifest-schema.toml" = "se_manifest_schema/manifest-schema.toml"}
+
+---
+
 ## [0.2.0] - 2026-04-30
 
 ### Added
@@ -95,5 +104,6 @@ git tag -d vX.Z.Y
 git push origin :refs/tags/vX.Z.Y
 ```
 
-[Unreleased]: https://github.com/structural-explainability/se-manifest-schema/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/structural-explainability/se-manifest-schema/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.2.1
 [0.2.0]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.2.0
