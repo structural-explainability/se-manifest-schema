@@ -23,11 +23,6 @@ env:
   PYTHONUNBUFFERED: "1"       # WHY: Real-time logging.
   PYTHONIOENCODING: "utf-8"   # WHY: Ensure UTF-8 encoding for international characters.
 
-concurrency:
-  # WHY: Prevent concurrent releases; wait for previous to complete.
-  group: release-${{ github.ref }}
-  cancel-in-progress: false  # WHY: Never cancel a release in progress.
-
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
