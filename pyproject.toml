@@ -191,5 +191,5 @@ force-include = {"manifest-schema.toml" = "se_manifest_schema/manifest-schema.to
 [tool.hatch.version]
 # WHY: Version derived from git tags at build time
 source = "vcs"
-fallback-version = "0.2.2"              # Used when no git tags present (fresh clone, CI).
+fallback-version = "0.2.3"              # Used when no git tags present (fresh clone, CI).
 tag-pattern = "^(?:v)?(?P<version>\\d+\\.\\d+\\.\\d+)$"

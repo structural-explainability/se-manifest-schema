@@ -11,6 +11,25 @@ and this project adheres to **[Semantic Versioning](https://semver.org/spec/v2.0
 
 ---
 
+## [0.2.3] - 2026-05-01
+
+### Added
+
+Added two more `allowed_fields`:
+
+```toml
+[section.validation]
+required = false
+description = "Repository-local validation configuration."
+allowed_fields = [
+    "entrypoint",
+    "strict_entrypoint",
+    "tag_entrypoint",
+]
+```
+
+---
+
 ## [0.2.2] - 2026-05-01
 
 ### Added
@@ -120,7 +139,10 @@ git tag -d vX.Z.Y
 git push origin :refs/tags/vX.Z.Y
 ```
 
-[Unreleased]: https://github.com/structural-explainability/se-manifest-schema/compare/v0.2.2...HEAD
+## Links
+
+[Unreleased]: https://github.com/structural-explainability/se-manifest-schema/compare/v0.2.3...HEAD
+[0.2.3]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.2.3
 [0.2.2]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.2.2
 [0.2.1]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.2.1
 [0.2.0]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.2.0

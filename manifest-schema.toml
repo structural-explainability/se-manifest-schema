@@ -90,7 +90,11 @@ allowed_fields = ["includes", "excludes"]
 [section.validation]
 required = false
 description = "Repository-local validation configuration."
-allowed_fields = ["entrypoint"]
+allowed_fields = [
+    "entrypoint",
+    "strict_entrypoint",
+    "tag_entrypoint",
+]
 
 [section.naming]
 required = false
