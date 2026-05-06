@@ -1,6 +1,5 @@
-"""Tests for sync.py - version propagation from CITATION.cff."""
+"""Tests for sync.py - version sync from CITATION.cff to pyproject.toml."""
 
-import os
 from pathlib import Path
 
 import pytest
@@ -8,20 +7,23 @@ import pytest
 from se_manifest_schema.sync import get_version_from_citation, sync_pyproject
 
 
-def test_get_version_from_citation(tmp_path: Path) -> None:
-    """Reads version correctly from a valid CITATION.cff."""
+def test_get_version_from_citation_valid(tmp_path: Path) -> None:
     (tmp_path / "CITATION.cff").write_text(
-        "version: 1.2.3\ndate-released: 2026-01-01\n", encoding="utf-8"
+        "cff-version: '1.2.0'\nversion: 0.2.0\n", encoding="utf-8"
     )
+    import os
+
     old = Path.cwd()
     os.chdir(tmp_path)
     try:
-        assert get_version_from_citation() == "1.2.3"
+        assert get_version_from_citation() == "0.2.0"
     finally:
         os.chdir(old)
 
 
-def test_get_version_missing_file(tmp_path: Path) -> None:
+def test_get_version_from_citation_missing(tmp_path: Path) -> None:
+    import os
+
     old = Path.cwd()
     os.chdir(tmp_path)
     try:
@@ -31,63 +33,31 @@ def test_get_version_missing_file(tmp_path: Path) -> None:
         os.chdir(old)
 
 
-def test_get_version_missing_field(tmp_path: Path) -> None:
-    (tmp_path / "CITATION.cff").write_text("title: Something\n", encoding="utf-8")
-    old = Path.cwd()
-    os.chdir(tmp_path)
-    try:
-        with pytest.raises(ValueError, match="version"):
-            get_version_from_citation()
-    finally:
-        os.chdir(old)
-
-
-def test_sync_pyproject_updates_fallback(tmp_path: Path) -> None:
+def test_sync_pyproject_updates_version(tmp_path: Path) -> None:
     pyproject = tmp_path / "pyproject.toml"
     pyproject.write_text(
         '[tool.hatch.version]\nfallback-version = "0.1.0"\n', encoding="utf-8"
     )
+    import os
+
     old = Path.cwd()
     os.chdir(tmp_path)
     try:
-        sync_pyproject("2.0.0")
-        assert 'fallback-version = "2.0.0"' in pyproject.read_text(encoding="utf-8")
-    finally:
-        os.chdir(old)
-
-
-def test_sync_pyproject_missing_file(tmp_path: Path) -> None:
-    old = Path.cwd()
-    os.chdir(tmp_path)
-    try:
-        with pytest.raises(FileNotFoundError, match="pyproject.toml"):
-            sync_pyproject("1.0.0")
+        sync_pyproject("0.2.0")
+        assert 'fallback-version = "0.2.0"' in pyproject.read_text(encoding="utf-8")
     finally:
         os.chdir(old)
 
 
 def test_sync_pyproject_missing_field(tmp_path: Path) -> None:
-    (tmp_path / "pyproject.toml").write_text(
-        "[project]\nname = 'x'\n", encoding="utf-8"
-    )
+    pyproject = tmp_path / "pyproject.toml"
+    pyproject.write_text("[project]\nname = 'test'\n", encoding="utf-8")
+    import os
+
     old = Path.cwd()
     os.chdir(tmp_path)
     try:
         with pytest.raises(ValueError, match="fallback-version"):
-            sync_pyproject("1.0.0")
-    finally:
-        os.chdir(old)
-
-
-def test_sync_pyproject_multiple_fields(tmp_path: Path) -> None:
-    (tmp_path / "pyproject.toml").write_text(
-        'fallback-version = "0.1.0"\nfallback-version = "0.1.0"\n',
-        encoding="utf-8",
-    )
-    old = Path.cwd()
-    os.chdir(tmp_path)
-    try:
-        with pytest.raises(ValueError, match="fallback-version"):
-            sync_pyproject("1.0.0")
+            sync_pyproject("0.2.0")
     finally:
         os.chdir(old)

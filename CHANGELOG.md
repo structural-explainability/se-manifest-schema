@@ -7,7 +7,29 @@ All notable changes to this project will be documented in this file.
 The format is based on **[Keep a Changelog](https://keepachangelog.com/en/1.1.0/)**
 and this project adheres to **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)**.
 
+---
+
 ## [Unreleased]
+
+---
+
+## [0.3.0] - 2026-05-06
+
+### Added
+
+- Packaged `manifest-schema.toml` into the source distribution and wheel for runtime access.
+- Added command modules for `validate`, `validate-schema`, and `sync-version`.
+- Added CLI command tests.
+
+### Changed
+
+- Refactored CLI handling into dedicated command modules.
+- Replaced `.markdownlint.yml` with `.markdownlint-cli2.yaml`.
+- Updated schema/package metadata for the 0.3.0 release.
+
+### Removed
+
+- Removed orchestration in favor of command-specific modules.
 
 ---
 
@@ -85,22 +107,20 @@ Follow these steps exactly when creating a new release.
 
 ### Task 1. Update release metadata (manual edits)
 
-1.1. CITATION.cff: update version and date-released
-1.2. CHANGELOG.md: add section, move unreleased entries, update links
+1.1. `manifest-schema.toml` - update `version` when schema semantics or validator contract changes
+1.2. `CITATION.cff` - update `version` and `date-released`
+1.3. CHANGELOG.md: add section, move unreleased entries, update links
 
-### Task 2. Sync
+### Task 2. Sync and Validate
 
-```shell
-uv run python -m se_manifest_schema sync
-```
-
-Reads `CITATION.cff` version and `date-released`
+Sync command reads `CITATION.cff` version and `date-released`
 and updates `pyproject.toml` fallback-version.
 
-### Task 3. Validate
-
 ```shell
-uv run python -m se_manifest_schema validate --strict
+uv run se-manifest sync-version
+uv run se-manifest validate-schema --strict
+uv run se-manifest validate --strict
+
 git add -A
 uvx pre-commit run --all-files
 uv run python -m pyright
@@ -112,7 +132,7 @@ uv run python -m zensical build
 
 ```shell
 git add -A
-git commit -m "Release X.Y.Z"
+git commit -m "Prep X.Y.Z"
 git push -u origin main
 ```
 

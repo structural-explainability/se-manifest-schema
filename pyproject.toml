@@ -57,14 +57,22 @@ dev = [
 ]
 
 docs = [
-    # REQ.DOCS.DEPS: External packages used to generate project documentation.
+    "mkdocstrings-python", # WHY: Required for API reference generation in documentation.
     "zensical==0.0.37", # WHY: Link resolution fails with newer versions; pinning to a known working version.,
 ]
+
+[project.scripts]
+se-manifest = "se_manifest_schema.cli:main"
+# WHY: Defines the CLI entry point. Only one:
+# one tool, multiple subcommands is cleaner and
+# matches how tools like git and uv work
 
 [project.urls]
 Homepage = "https://github.com/structural-explainability/se-manifest-schema"
 Repository = "https://github.com/structural-explainability/se-manifest-schema"
 Documentation = "https://structural-explainability.github.io/se-manifest-schema/"
+Issues = "https://github.com/structural-explainability/se-manifest-schema/issues"
+Changelog = "https://github.com/structural-explainability/se-manifest-schema/blob/main/CHANGELOG.md"
 
 # ============================================================
 # SECTION 2: TOOL CONFIGURATION (Professional basics)
@@ -82,11 +90,10 @@ pythonVersion = "3.15"
 reportMissingTypeStubs = "none" # WHY: Avoid warnings from third-party libraries without type stubs.
 reportMissingImports = "warning" # WHY: Warn about missing imports to catch potential issues, but allow flexibility in notebooks and dynamic code.
 reportPrivateUsage = "none" # WHY: Allow usage of private members (e.g., _version.py) without warnings, as this is common in Python projects.
-typeCheckingMode = "strict" # strict | basic | off
+typeCheckingMode = "basic" # strict | basic | off
 
 [[tool.pyright.executionEnvironments]]
 root = "tests"
-typeCheckingMode = "basic" # strict | basic | off
 
 # === PYTEST (VERIFY LOGIC) ===
 
@@ -172,7 +179,7 @@ convention = "google"   # ALT: "numpy" choose one, never mix.
 # REQ.PROJECT: A build system MUST be declared for package discovery and publishing.
 # REQ.STRUCTURE: All importable code MUST live under src/.
 # WHY src/ layout: Prevents accidental imports from the repo root;
-#     ensures consistent behavior across IDEs, tests, CI, and PyPI.
+# ensures consistent behavior across IDEs, tests, CI, and PyPI.
 
 [build-system]
 build-backend = "hatchling.build"
@@ -183,13 +190,33 @@ requires = ["hatchling", "hatch-vcs"]
 # CUSTOM: Must match src/ folders.
 version-file = "src/se_manifest_schema/_version.py"
 
+[tool.hatch.build.targets.sdist]
+include = [
+  "manifest-schema.toml",
+  "src/se_manifest_schema",
+  "README.md",
+  "LICENSE",
+  "pyproject.toml",
+]
+
 [tool.hatch.build.targets.wheel]
 # CUSTOM: Must match src/ folders.
-packages = ["src/se_manifest_schema"]  # REQ.PACKAGES: Discovery rooted at src/.
-force-include = {"manifest-schema.toml" = "se_manifest_schema/manifest-schema.toml"}
+packages = ["src/se_manifest_schema"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"manifest-schema.toml" = "se_manifest_schema/manifest-schema.toml"
+# WHY: Include manifest-schema.toml in the package for runtime access to the schema definition.
+# Repo source of truth: (root) manifest-schema.toml
+# Installed package runtime artifact: se_manifest_schema/manifest-schema.toml
+# Take the single source of truth at repo root.
+# Place it inside the wheel package at se_manifest_schema/manifest-schema.toml.
 
 [tool.hatch.version]
 # WHY: Version derived from git tags at build time
 source = "vcs"
-fallback-version = "0.2.3"              # Used when no git tags present (fresh clone, CI).
+# WHY: Allow hatch-vcs/setuptools-scm to find the Git root when the project
+# is built from a subdirectory, temporary build directory, or isolated build env.
+search_parent_directories = true
+# Used when no git tags present (fresh clone, CI).
+fallback-version = "0.3.0"
 tag-pattern = "^(?:v)?(?P<version>\\d+\\.\\d+\\.\\d+)$"

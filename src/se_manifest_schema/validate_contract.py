@@ -12,7 +12,7 @@ from se_manifest_schema.sync import get_version_from_citation
 
 def validate_tag(manifest: dict[str, Any]) -> list[str]:
     """Validate CITATION.cff version matches current git tag."""
-    _ = manifest  # not needed — version comes from CITATION.cff
+    _ = manifest  # not needed; version comes from CITATION.cff
     errors: list[str] = []
     try:
         version = get_version_from_citation()

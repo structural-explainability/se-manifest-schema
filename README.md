@@ -44,6 +44,9 @@ code .
 ### In a VS Code terminal
 
 ```shell
+# reset uv cache only after suspected cache corruption or strange dependency errors
+# uv cache clean
+
 uv self update
 uv python pin 3.15
 uv sync --extra dev --extra docs --upgrade
@@ -58,6 +61,12 @@ uvx pre-commit run --all-files
 
 # validate
 uv run python -m se_manifest_schema validate --strict
+
+# validate schema source of truth (this repo only)
+uv run se-manifest validate-schema --strict
+
+# validate repo SE_MANIFEST.toml against schema (also used downstream)
+uv run se-manifest validate --strict
 
 # do chores
 uv run python -m pyright

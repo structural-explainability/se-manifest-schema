@@ -1,8 +1,8 @@
 # ============================================================
 # .github/workflows/ci-python-zensical.yml (Python src + Zensical docs)
 # ============================================================
-# Updated: 2026-04-30
-#
+# Updated: 2026-05-06
+
 # WHY-FILE: Validate repository hygiene, Python correctness, and documentation builds.
 # REQ: CI MUST NOT introduce arbitrary rules that are not reproducible locally.
 # OBS: CI validates only; it does not edit files or deploy docs.

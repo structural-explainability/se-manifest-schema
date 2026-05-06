@@ -10,7 +10,7 @@ type: software
 
 title: "Structural Explainability SE Manifest Schema"
 # Set version and date-released to match latest git tag or release.
-version: "0.2.3"
+version: "0.3.0"
 date-released: "2026-05-01"
 
 authors:

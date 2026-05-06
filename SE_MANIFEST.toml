@@ -3,8 +3,8 @@
 # se-manifest-schema
 # ============================================================
 
-schema = "se-manifest-2"
-schema_url = "https://raw.githubusercontent.com/structural-explainability/se-manifest-schema/v0.2.0/manifest-schema.toml"
+schema = "se-manifest-schema"
+schema_url = "https://raw.githubusercontent.com/structural-explainability/se-manifest-schema/blob/main/manifest-schema.toml"
 
 # === Identity ===
 

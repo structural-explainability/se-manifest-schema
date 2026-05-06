@@ -1,15 +1,28 @@
 # ============================================================
-# SE SE Manifest Schema: Manifest Schema Registry
-# Defines the expected structure and validation rules for
-# SE_MANIFEST.toml conforming to se-manifest-2.
+# manifest-schema.toml
+# ============================================================
+# Canonical structural-explainability manifest schema definition.
+# Defines required sections, fields, and validation rules for
+# SE_MANIFEST.toml files in the Structural Explainability ecosystem.
+#
+# Navigation:
+#   [meta]                schema identity
+#   [manifest]            manifest file contract
+#   [manifest.identity]   required top-level fields
+#
+#   FIELD DEFINITIONS     types and required status per field
+#   CLASS REGISTRY        which sections each repo class requires
+#   VALIDATION RULES      enforcement policy
+#   NOTES                 non-goals and manifest role
 # ============================================================
 
+
 [meta]
-schema = "se-manifest-schema-manifest-schema-1"
-version = "0.1.0"
-status = "draft"
-title = "SE Manifest Schema Registry"
-manifest_schema_id = "se-manifest-2"
+schema = "se-manifest-schema"
+version = "0.3.0"
+status = "active"
+title = "Structural Explainability Manifest Schema"
+manifest_schema_id = "se-manifest-schema-1"
 purpose = "Defines required sections, fields, and validation rules for SE_MANIFEST.toml in the Structural Explainability ecosystem."
 
 [manifest]
@@ -21,7 +34,7 @@ reviewable = true
 [manifest.identity]
 schema_field = "schema"
 schema_required = true
-schema_allowed = ["se-manifest-2"]
+schema_allowed = ["se-manifest-schema"]
 
 schema_url_field = "schema_url"
 schema_url_required = true

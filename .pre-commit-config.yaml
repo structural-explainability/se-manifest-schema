@@ -62,6 +62,10 @@ repos:
       - id: end-of-file-fixer
         name: A2) End files with a newline (per .gitattributes)
 
+      - id: mixed-line-ending
+        name: A3) Normalize line endings to LF before linters
+        args: [--fix=lf] # OBS: Windows working copies may be CRLF.
+
       # === PRE-COMMIT: CHECK DATA FILE FORMATS ===
 
       - id: check-json
@@ -93,7 +97,7 @@ repos:
   # === REPO: RUFF PRE-COMMIT (for Python code) ===
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.10
+    rev: v0.15.12
     hooks:
       - id: ruff-check
         name: D1) Ruff linter with autofix (runs first in pre-commit)
@@ -118,8 +122,9 @@ repos:
 
       - id: markdownlint
         name: E2) Markdown lint
+        # Uses .markdownlint-cli2.yaml if present, otherwise defaults.
         language: system
-        entry: npx markdownlint-cli "**/*.md" --fix
+        entry: npx markdownlint-cli --fix
         pass_filenames: false
         always_run: true
 

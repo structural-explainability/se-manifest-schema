@@ -1,38 +1,46 @@
-"""cli.py - Command-line interface for se-manifest-schema.
+"""src/se_manifest_schema/cli.py.
 
-Parses arguments and dispatches to orchestrate.py or sync.py.
-Owns nothing except argument parsing and error handling.
-All logic lives in orchestrate.py and sync.py.
+Command-line interface.
+Pure dispatcher; owns argument parsing only.
+All logic lives in commands/.
 
 Entry points:
-  uv run python -m se_manifest_schema validate
-  uv run python -m se_manifest_schema validate --strict
-  uv run python -m se_manifest_schema validate --require-tag
-  uv run python -m se_manifest_schema sync
+  uv run se-manifest validate
+  uv run se-manifest validate --strict --require-tag
+  uv run se-manifest validate --path path/to/SE_MANIFEST.toml
+  uv run se-manifest validate-schema
+  uv run se-manifest validate-schema --strict
+  uv run se-manifest sync-version
 
-Call chain:
-  __main__.py -> cli.main()
-              -> orchestrate.run_validate()  (sync_all called internally)
-              -> sync.sync_all()             (sync only, no validation)
+  uv run python -m se_manifest_schema validate
+  uv run python -m se_manifest_schema validate-schema
+  uv run python -m se_manifest_schema sync-version
 """
 
 import argparse
+from pathlib import Path
 
-from se_manifest_schema.orchestrate import run_validate
-from se_manifest_schema.sync import sync_all
+from se_manifest_schema.commands import sync_version, validate, validate_schema
 
 
 def build_parser() -> argparse.ArgumentParser:
     """Build the argument parser."""
     parser = argparse.ArgumentParser(
-        prog="se-manifest-schema",
-        description="Sync and validate the SE manifest schema.",
+        prog="se-manifest",
+        description="Validate and sync SE_MANIFEST.toml files for se Interfaces repos.",
     )
     subparsers = parser.add_subparsers(dest="command")
 
+    # === validate ===
     validate_parser = subparsers.add_parser(
         "validate",
-        help="Sync and validate manifest-schema.toml and SE_MANIFEST.toml.",
+        help="Validate SE_MANIFEST.toml against the schema. Safe for all repos.",
+    )
+    validate_parser.add_argument(
+        "--path",
+        type=Path,
+        default=None,
+        help="Path to SE_MANIFEST.toml (default: ./SE_MANIFEST.toml).",
     )
     validate_parser.add_argument(
         "--strict",
@@ -45,9 +53,26 @@ def build_parser() -> argparse.ArgumentParser:
         help="Require CITATION.cff version to match current git tag.",
     )
 
+    # === validate-schema ===
+    vs_parser = subparsers.add_parser(
+        "validate-schema",
+        help="Validate manifest-schema.toml internal consistency. This repo only.",
+    )
+    vs_parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="Treat warnings as errors.",
+    )
+    vs_parser.add_argument(
+        "--require-tag",
+        action="store_true",
+        help="Require CITATION.cff version to match current git tag.",
+    )
+
+    # === sync-version ===
     subparsers.add_parser(
-        "sync",
-        help="Sync pyproject.toml fallback-version from CITATION.cff version.",
+        "sync-version",
+        help="Sync pyproject.toml fallback-version from CITATION.cff. This repo only.",
     )
 
     return parser
@@ -62,19 +87,21 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
-    try:
-        if args.command == "validate":
-            return run_validate(
-                strict=args.strict,
-                require_tag=args.require_tag,
-            )
-        if args.command == "sync":
-            sync_all()
-            return 0
+    if args.command == "validate":
+        return validate.run(
+            path=args.path,
+            strict=args.strict,
+            require_tag=args.require_tag,
+        )
 
-    except (ValueError, FileNotFoundError, RuntimeError) as e:
-        print(f"Error: {e}")
-        return 1
+    if args.command == "validate-schema":
+        return validate_schema.run(
+            strict=args.strict,
+            require_tag=args.require_tag,
+        )
+
+    if args.command == "sync-version":
+        return sync_version.run()
 
     parser.print_help()
     return 2

@@ -6,6 +6,11 @@
 
 # WHY-FILE: Pre-release checks and build.
 # REQ: Trigger on version tags like v1.2.3.
+#
+# OWNS:
+#   schema validation
+#   SE_MANIFEST.toml validation
+#   artifact integrity checks
 
 name: Pre-Release Checks and Build
 
@@ -16,6 +21,7 @@ on:
 permissions: # WHY: Use least privileges required.
   contents: write   # WHY: Create GitHub Release.
   pages: write      # WHY: Required to deploy to GitHub Pages.
+  id-token: write   # WHY: PyPI Trusted Publishing (OIDC) + deploy-pages OIDC.
 
 env:
   PYTHONUNBUFFERED: "1"       # WHY: Real-time logging.
@@ -94,10 +100,39 @@ jobs:
           fi
           echo "Artifact version matches tag."
 
-      # === CHECKS (after build, may modify working tree) ===
+      - name: B5) Confirm wheel contains runtime schema artifact
+        shell: bash
+        run: |
+          set -e
+          python - <<'PY'
+          import pathlib
+          import zipfile
 
-      - name: C1) Sync to install all dependencies
+          wheels = list(pathlib.Path("dist").glob("*.whl"))
+          assert wheels, "No wheel found"
+
+          wheel = wheels[-1]
+          names = zipfile.ZipFile(wheel).namelist()
+          matches = [name for name in names if name.endswith("manifest-schema.toml")]
+
+          print(matches)
+
+          assert (
+              "se_manifest_schema/manifest-schema.toml" in names
+          ), "Wheel is missing se_manifest_schema/manifest-schema.toml"
+          PY
+
+      - name: B6) Sync dependencies after build
         run: uv sync --extra dev --extra docs --upgrade
 
-      - name: C2) Validate manifest schema and SE_MANIFEST.toml
-        run: uv run python -m se_manifest_schema validate --strict --require-tag
+      # ============================================================
+      # C) CHECKS REPO-SPECIFIC VALIDATION STEPS
+      # ============================================================
+
+      - name: C1) Validate schema
+        run: uv run se-manifest validate-schema --strict
+        # WHY: validate this schema
+
+      - name: C2) Validate SE_MANIFEST.toml against schema
+        run: uv run se-manifest validate --strict
+        # WHY: validate this repo manifest against the schema

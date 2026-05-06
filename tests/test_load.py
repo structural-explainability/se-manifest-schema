@@ -1,6 +1,5 @@
 """Tests for load.py - file loading and parsing."""
 
-import os
 from pathlib import Path
 from unittest.mock import patch
 
@@ -12,10 +11,11 @@ from se_manifest_schema.load import (
     load_manifest,
     load_schema,
     load_toml,
+    schema_text,
 )
 
 
-def test_get_git_tag_not_found(tmp_path: Path) -> None:
+def test_get_git_tag_not_found() -> None:
     with (
         patch("shutil.which", return_value=None),
         pytest.raises(RuntimeError, match="git executable"),
@@ -30,37 +30,18 @@ def test_load_toml_valid(tmp_path: Path) -> None:
     assert data["meta"]["version"] == "1.0.0"
 
 
-def test_load_schema_found(tmp_path: Path) -> None:
-    (tmp_path / "manifest-schema.toml").write_text(
-        '[meta]\nversion = "1.0.0"\n', encoding="utf-8"
-    )
-    old = Path.cwd()
-    os.chdir(tmp_path)
-    try:
-        data = load_schema()
-        assert "meta" in data
-    finally:
-        os.chdir(old)
+def test_load_schema_found() -> None:
+    text = schema_text()
+    data = load_schema()
 
-
-def test_load_schema_missing(tmp_path: Path) -> None:
-    old = Path.cwd()
-    os.chdir(tmp_path)
-    try:
-        with pytest.raises(FileNotFoundError, match="manifest-schema.toml"):
-            load_schema()
-    finally:
-        os.chdir(old)
+    assert text.strip()
+    assert isinstance(data, dict)
+    assert data
 
 
 def test_load_manifest_missing(tmp_path: Path) -> None:
-    old = Path.cwd()
-    os.chdir(tmp_path)
-    try:
-        with pytest.raises(FileNotFoundError, match="SE_MANIFEST.toml"):
-            load_manifest()
-    finally:
-        os.chdir(old)
+    with pytest.raises(FileNotFoundError, match="MANIFEST.toml"):
+        load_manifest(tmp_path / "MANIFEST.toml")
 
 
 def test_get_repo_version_valid() -> None:

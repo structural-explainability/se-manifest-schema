@@ -1,11 +1,11 @@
-"""sync.py - Version sync for se-manifest-schema.
+"""sync.py - Version sync.
 
 Source of truth: CITATION.cff version field (updated manually before release).
 Targets: pyproject.toml fallback-version.
 
 Does NOT touch:
   - CITATION.cff (that is the source, not a target)
-  - manifest-schema.toml
+  - schema/manifest-1.toml
   - SE_MANIFEST.toml
 """
 
@@ -54,7 +54,7 @@ def sync_pyproject(version: str) -> None:
         raise ValueError("pyproject.toml: could not find fallback-version field")
     if count > 1:
         raise ValueError(
-            f"pyproject.toml: found {count} fallback-version fields - expected exactly 1"
+            f"pyproject.toml: found {count} fallback-version fields; expected exactly 1"
         )
     path.write_text(updated, encoding="utf-8")
 
@@ -62,9 +62,10 @@ def sync_pyproject(version: str) -> None:
 def sync_all() -> None:
     """Sync pyproject.toml from CITATION.cff version.
 
-    CITATION.cff is updated manually. This propagates that version
-    to pyproject.toml fallback-version. Nothing else is touched.
+    CITATION.cff is updated manually.
+    This propagates that version to pyproject.toml fallback-version.
+    Nothing else is touched.
     """
     version = get_version_from_citation()
     sync_pyproject(version)
-    print(f"[sync] pyproject.toml fallback-version updated to {version}")
+    print(f"[sync] pyproject.toml fallback-version updated to {version}")  # noqa: T201
