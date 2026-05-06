@@ -44,7 +44,7 @@ code .
 ### In a VS Code terminal
 
 ```shell
-# reset uv cache only after suspected cache corruption or strange dependency errors
+# if strange errors, clean uv cache
 # uv cache clean
 
 uv self update
