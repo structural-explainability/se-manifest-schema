@@ -105,6 +105,8 @@ required = false
 description = "Repository-local validation configuration."
 allowed_fields = [
     "entrypoint",
+    "export_check_entrypoint",
+    "reference_entrypoint",
     "strict_entrypoint",
     "tag_entrypoint",
 ]
@@ -262,6 +264,14 @@ required = true
 type = "string"
 required = false
 
+[field.validation.export_check_entrypoint]
+type = "string"
+required = false
+
+[field.validation.reference_entrypoint]
+type = "string"
+required = false
+
 [field.validation.strict_entrypoint]
 type = "string"
 required = false
@@ -392,6 +402,23 @@ forbidden_sections = [
     "contract",
     "exports",
 ]
+required_compatibility_fields = []
+
+[class.spec]
+required_repo_name_patterns = ["spec-{focus}"]
+required_layer_roles = ["specification"]
+required_sections = [
+    "meta",
+    "repo",
+    "layer",
+    "depends",
+    "provides",
+    "scope",
+    "citation",
+    "traceability",
+]
+optional_sections = ["validation", "naming", "governance", "compatibility"]
+forbidden_sections = ["contract", "exports"]
 required_compatibility_fields = []
 
 [class.constitution]

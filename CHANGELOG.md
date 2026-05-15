@@ -92,7 +92,7 @@ force-include = {"manifest-schema.toml" = "se_manifest_schema/manifest-schema.to
 
 ---
 
-## Notes on versioning and releases
+## Notes on Versioning and Releases
 
 - We use **SemVer**:
   - **MAJOR** - breaking changes to artifact structure or validation semantics
@@ -117,15 +117,22 @@ Sync command reads `CITATION.cff` version and `date-released`
 and updates `pyproject.toml` fallback-version.
 
 ```shell
+uv sync --extra dev --extra docs --upgrade
 uv run se-manifest sync-version
 uv run se-manifest validate-schema --strict
 uv run se-manifest validate --strict
-
 git add -A
 uvx pre-commit run --all-files
 uv run python -m pyright
 uv run python -m pytest
 uv run python -m zensical build
+
+uv run python -c "import shutil; from pathlib import Path; shutil.rmtree(Path('dist'), ignore_errors=True)"
+
+uv run python -m build
+uv run python -m twine check dist/*
+
+uv run python -c "import pathlib, zipfile; wheels=list(pathlib.Path('dist').glob('*.whl')); assert wheels, 'No wheel found'; wheel=wheels[-1]; names=zipfile.ZipFile(wheel).namelist(); print([n for n in names if n.endswith('manifest-schema.toml')]); assert 'se_manifest_schema/manifest-schema.toml' in names"
 ```
 
 ### Task 4. Commit, tag, push
