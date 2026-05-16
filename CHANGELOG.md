@@ -11,6 +11,24 @@ and this project adheres to **[Semantic Versioning](https://semver.org/spec/v2.0
 
 ## [Unreleased]
 
+### Added - 2026-05-16
+
+- Added `accountable_record`, `record_system`, and `verification` repository classes.
+- Added support for Accountable Record application-layer repositories:
+  - `accountable-record`
+  - `judicial-record`
+  - `civic-influence-record`
+  - `se-verification-judicial-record`
+  - `se-verification-civic-influence-record`
+- Added manifest class rules for Accountable Record contracts, domain record
+  systems, and SE verification profiles.
+- Added validation field support for:
+  - `entrypoint`
+  - `export_check_entrypoint`
+  - `reference_entrypoint`
+  - `strict_entrypoint`
+  - `tag_entrypoint`
+
 ---
 
 ## [0.3.0] - 2026-05-06
