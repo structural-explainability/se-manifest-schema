@@ -15,7 +15,22 @@
 #   VALIDATION RULES      enforcement policy
 #   NOTES                 non-goals and manifest role
 # ============================================================
+# OBS: Some earlier SE operational classes may become legacy if the AR contract
+# and verifier architecture becomes the primary operational enforcement layer.
+# They are retained while active repositories still use them.
 
+# Existing SE ecosystem:
+#   admin, docs, formal_contract, govsrc, mapping, schema, theory
+#
+# Transitional / architecture-dependent SE classes:
+#   constitution, kernel, mapspec, regimes, rules
+#
+# These may remain first-class if the SE substrate/enforcement architecture
+# stays separate from Accountable Record. They may be deprecated later if AR
+# contract + verifier repos fully absorb their operational role.
+#
+# New AR ecosystem:
+#   contract, data_companion, implementation, record_system, verifier
 
 [meta]
 schema = "se-manifest-schema"
@@ -76,9 +91,11 @@ allowed_fields = ["artifacts"]
 
 [section.contract]
 required = false
-description = "Formal contract metadata for repositories that define or consume a contract."
+description = "Formal contract metadata for repositories that define, implement, verify, or consume a contract."
 allowed_fields = [
     "contract_version",
+    "contract_role",
+    "contract_authority",
     "exports_verified_contract",
     "consumes_contract_from",
 ]
@@ -241,6 +258,16 @@ type = "string"
 required = false
 constraints = ["nonempty"]
 
+[field.contract.contract_role]
+type = "string"
+required = false
+constraints = ["nonempty"]
+
+[field.contract.contract_authority]
+type = "string"
+required = false
+constraints = ["nonempty"]
+
 [field.contract.exports_verified_contract]
 type = "boolean"
 required = false
@@ -248,7 +275,7 @@ required = false
 [field.contract.consumes_contract_from]
 type = "string"
 required = false
-constraints = ["ascii-repo-name"]
+constraints = ["nonempty"]
 
 # --- scope ---
 
@@ -362,26 +389,6 @@ allowed_fields = [
 # Class-specific requirements (alphabetical by class name)
 # ------------------------------------------------------------
 
-[class.accountable_record]
-required_repo_name_patterns = ["accountable-record"]
-required_layer_roles = ["accountable-record-contract"]
-required_sections = [
-    "citation",
-    "depends",
-    "governance",
-    "layer",
-    "meta",
-    "naming",
-    "provides",
-    "repo",
-    "scope",
-    "traceability",
-    "validation",
-]
-optional_sections = ["compatibility"]
-forbidden_sections = ["contract", "exports"]
-required_compatibility_fields = []
-
 [class.adapter]
 required_repo_name_patterns = ["se-adapter-{standard}"]
 required_layer_roles = ["adapter"]
@@ -434,6 +441,72 @@ required_sections = [
 ]
 optional_sections = ["compatibility", "validation", "naming", "governance"]
 forbidden_sections = []
+required_compatibility_fields = []
+
+[class.contract]
+required_repo_name_patterns = [
+    "{focus}",
+    "{focus}-contract",
+    "se-{focus}",
+    "se-{focus}-contract",
+]
+required_layer_roles = [
+    "contract",
+    "language-neutral-contract",
+]
+required_sections = [
+    "meta",
+    "repo",
+    "layer",
+    "depends",
+    "provides",
+    "contract",
+    "scope",
+    "citation",
+    "traceability",
+]
+optional_sections = [
+    "validation",
+    "naming",
+    "governance",
+    "compatibility",
+]
+forbidden_sections = [
+    "exports",
+]
+required_compatibility_fields = []
+
+[class.data_companion]
+required_repo_name_patterns = [
+    "{focus}-data",
+    "{focus}-fixtures",
+    "{focus}-corpus",
+]
+required_layer_roles = [
+    "data-companion",
+    "fixture-data-companion",
+    "record-system-data-companion",
+]
+required_sections = [
+    "meta",
+    "repo",
+    "layer",
+    "depends",
+    "provides",
+    "scope",
+    "citation",
+    "traceability",
+]
+optional_sections = [
+    "validation",
+    "naming",
+    "governance",
+    "compatibility",
+    "contract",
+]
+forbidden_sections = [
+    "exports",
+]
 required_compatibility_fields = []
 
 [class.docs]
@@ -496,6 +569,42 @@ optional_sections = [
     "governance",
 ]
 forbidden_sections = []
+required_compatibility_fields = []
+
+[class.implementation]
+required_repo_name_patterns = [
+    "{focus}-py",
+    "{focus}-rs",
+    "{focus}-js",
+    "{focus}-java",
+    "{focus}-go",
+    "{focus}-implementation",
+]
+required_layer_roles = [
+    "implementation",
+    "contract-implementation",
+    "verifier-implementation",
+]
+required_sections = [
+    "meta",
+    "repo",
+    "layer",
+    "depends",
+    "provides",
+    "contract",
+    "scope",
+    "citation",
+    "traceability",
+    "validation",
+]
+optional_sections = [
+    "naming",
+    "governance",
+    "compatibility",
+]
+forbidden_sections = [
+    "exports",
+]
 required_compatibility_fields = []
 
 [class.kernel]
@@ -630,10 +739,19 @@ required_compatibility_fields = ["constitution", "kernel", "schema"]
 [class.record_system]
 required_repo_name_patterns = [
     "{focus}-record",
+    "{focus}-record-{domain}",
+    "judicial-record-{focus}",
+    "civic-institutional-record",
+    "hydrogen-energy-record",
 ]
-required_layer_roles = ["accountable-record-system"]
+required_layer_roles = [
+    "record-system",
+    "domain-record-system",
+    "accountable-record-system",
+]
 required_sections = [
     "citation",
+    "contract",
     "depends",
     "governance",
     "layer",
@@ -645,8 +763,12 @@ required_sections = [
     "traceability",
     "validation",
 ]
-optional_sections = ["compatibility"]
-forbidden_sections = ["contract", "exports"]
+optional_sections = [
+    "compatibility",
+]
+forbidden_sections = [
+    "exports",
+]
 required_compatibility_fields = []
 
 [class.regimes]
@@ -766,6 +888,39 @@ required_sections = [
 ]
 optional_sections = ["compatibility"]
 forbidden_sections = ["contract", "exports"]
+required_compatibility_fields = []
+
+[class.verifier]
+required_repo_name_patterns = [
+    "se-verifier-{focus}",
+    "se-verifier-{focus}-record",
+    "{focus}-verifier",
+]
+required_layer_roles = [
+    "verifier",
+    "standalone-verifier",
+    "domain-verifier",
+]
+required_sections = [
+    "meta",
+    "repo",
+    "layer",
+    "depends",
+    "provides",
+    "contract",
+    "scope",
+    "citation",
+    "traceability",
+    "validation",
+]
+optional_sections = [
+    "naming",
+    "governance",
+    "compatibility",
+]
+forbidden_sections = [
+    "exports",
+]
 required_compatibility_fields = []
 
 # ------------------------------------------------------------
