@@ -6,8 +6,10 @@ Called by orchestrate.py when --require-tag is passed.
 
 from typing import Any
 
+from se_manifest_schema.check_version import get_version_from_citation
 from se_manifest_schema.load import get_git_tag
-from se_manifest_schema.sync import get_version_from_citation
+
+__all__ = ["validate_tag"]
 
 
 def validate_tag(manifest: dict[str, Any]) -> list[str]:

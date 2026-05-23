@@ -33,7 +33,7 @@ jobs:
     timeout-minutes: 30 # WHY: Prevent hanging jobs. If over, it is likely stuck.
     environment: pypi  # WHY: Use 'pypi' environment for PyPI publishing; ignore warnings.
     env:
-      UV_PYTHON: "3.15" # WHY: Set Python version for all steps.
+      UV_PYTHON: "3.14" # WHY: Set Python version for all steps.
 
     steps:
 

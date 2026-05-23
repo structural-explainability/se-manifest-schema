@@ -15,26 +15,11 @@
 #   VALIDATION RULES      enforcement policy
 #   NOTES                 non-goals and manifest role
 # ============================================================
-# OBS: Some earlier SE operational classes may become legacy if the AR contract
-# and verifier architecture becomes the primary operational enforcement layer.
-# They are retained while active repositories still use them.
 
-# Existing SE ecosystem:
-#   admin, docs, formal_contract, govsrc, mapping, schema, theory
-#
-# Transitional / architecture-dependent SE classes:
-#   constitution, kernel, mapspec, regimes, rules
-#
-# These may remain first-class if the SE substrate/enforcement architecture
-# stays separate from Accountable Record. They may be deprecated later if AR
-# contract + verifier repos fully absorb their operational role.
-#
-# New AR ecosystem:
-#   contract, data_companion, implementation, record_system, verifier
 
 [meta]
 schema = "se-manifest-schema"
-version = "0.3.0"
+version = "0.4.0"
 status = "active"
 title = "Structural Explainability Manifest Schema"
 manifest_schema_id = "se-manifest-schema-1"
@@ -42,6 +27,10 @@ purpose = "Defines required sections, fields, and validation rules for SE_MANIFE
 
 [manifest]
 filename = "SE_MANIFEST.toml"
+allowed_filenames = [
+    "SE_MANIFEST.toml",
+    "MANIFEST.toml",
+]
 human_legible = true
 machine_readable = true
 reviewable = true
@@ -261,7 +250,7 @@ constraints = ["nonempty"]
 [field.contract.contract_role]
 type = "string"
 required = false
-constraints = ["nonempty"]
+constraints = ["known-contract-role"]
 
 [field.contract.contract_authority]
 type = "string"
@@ -276,6 +265,12 @@ required = false
 type = "string"
 required = false
 constraints = ["nonempty"]
+
+[contract_roles]
+allowed = [
+    "authority",
+    "domain-contract",
+]
 
 # --- scope ---
 
@@ -447,13 +442,11 @@ required_compatibility_fields = []
 required_repo_name_patterns = [
     "{focus}",
     "{focus}-contract",
+    "{focus}-record",
     "se-{focus}",
     "se-{focus}-contract",
 ]
-required_layer_roles = [
-    "contract",
-    "language-neutral-contract",
-]
+required_layer_roles = ["contract", "language-neutral-contract"]
 required_sections = [
     "meta",
     "repo",
@@ -465,15 +458,8 @@ required_sections = [
     "citation",
     "traceability",
 ]
-optional_sections = [
-    "validation",
-    "naming",
-    "governance",
-    "compatibility",
-]
-forbidden_sections = [
-    "exports",
-]
+optional_sections = ["validation", "naming", "governance", "compatibility"]
+forbidden_sections = ["exports"]
 required_compatibility_fields = []
 
 [class.data_companion]
@@ -504,9 +490,7 @@ optional_sections = [
     "compatibility",
     "contract",
 ]
-forbidden_sections = [
-    "exports",
-]
+forbidden_sections = ["exports"]
 required_compatibility_fields = []
 
 [class.docs]
@@ -525,6 +509,38 @@ required_sections = [
 ]
 optional_sections = ["validation", "naming", "governance"]
 forbidden_sections = []
+required_compatibility_fields = []
+
+[class.engine]
+required_repo_name_patterns = [
+    "se-{focus}-kit",
+    "se-{focus}-engine",
+]
+required_layer_roles = [
+    "engine",
+    "contract-engine",
+    "resolver-engine",
+]
+required_sections = [
+    "meta",
+    "repo",
+    "layer",
+    "depends",
+    "provides",
+    "scope",
+    "citation",
+    "traceability",
+    "validation",
+]
+optional_sections = [
+    "naming",
+    "governance",
+    "compatibility",
+]
+forbidden_sections = [
+    "contract",
+    "exports",
+]
 required_compatibility_fields = []
 
 [class.formal_contract]
@@ -597,14 +613,8 @@ required_sections = [
     "traceability",
     "validation",
 ]
-optional_sections = [
-    "naming",
-    "governance",
-    "compatibility",
-]
-forbidden_sections = [
-    "exports",
-]
+optional_sections = ["naming", "governance", "compatibility"]
+forbidden_sections = ["exports"]
 required_compatibility_fields = []
 
 [class.kernel]
@@ -763,12 +773,8 @@ required_sections = [
     "traceability",
     "validation",
 ]
-optional_sections = [
-    "compatibility",
-]
-forbidden_sections = [
-    "exports",
-]
+optional_sections = ["compatibility"]
+forbidden_sections = ["exports"]
 required_compatibility_fields = []
 
 [class.regimes]
@@ -869,9 +875,7 @@ forbidden_sections = [
 required_compatibility_fields = []
 
 [class.verification]
-required_repo_name_patterns = [
-    "se-verification-{focus}-record",
-]
+required_repo_name_patterns = ["se-verification-{focus}-record"]
 required_layer_roles = ["verification"]
 required_sections = [
     "citation",
@@ -896,11 +900,7 @@ required_repo_name_patterns = [
     "se-verifier-{focus}-record",
     "{focus}-verifier",
 ]
-required_layer_roles = [
-    "verifier",
-    "standalone-verifier",
-    "domain-verifier",
-]
+required_layer_roles = ["verifier", "standalone-verifier", "domain-verifier"]
 required_sections = [
     "meta",
     "repo",
@@ -913,14 +913,8 @@ required_sections = [
     "traceability",
     "validation",
 ]
-optional_sections = [
-    "naming",
-    "governance",
-    "compatibility",
-]
-forbidden_sections = [
-    "exports",
-]
+optional_sections = ["naming", "governance", "compatibility"]
+forbidden_sections = ["exports"]
 required_compatibility_fields = []
 
 # ------------------------------------------------------------
@@ -934,11 +928,55 @@ require_single_repo_class = true
 require_repo_name_to_match_declared_class = true
 require_declared_class_to_exist_in_class_registry = true
 require_dependencies_to_follow_dependency_law = true
-require_manifest_filename_exact = true
+require_manifest_filename_allowed = true
 
 [validation.defaults]
 empty_optional_lists_allowed = true
 empty_required_lists_allowed = true
+
+# ------------------------------------------------------------
+# Contract validation rules
+# ------------------------------------------------------------
+
+[validation.contract]
+
+# --- Presence: the contract section must be complete for the contract class ---
+# WHY: the role-based rules below are only enforceable if these fields exist.
+contract_role_required_for_contract_class = true
+contract_authority_required_for_contract_class = true
+contract_version_required_for_contract_class = true
+
+# --- Role validity ---
+# WHY: contract_role is the discriminator the resolver keys on; it must be a
+# known role, exactly one.
+contract_role_must_be_known = true
+
+# --- Self-authority: every contract repo authors its own contract ---
+# WHY: contract_authority denotes the authority for THIS repo's own contract,
+# which is always this repo. This is the positive constraint that makes the
+# graph acyclic at the authority level: no repo can name another as the
+# authority for its own contract.
+contract_authority_must_equal_self = true
+
+# --- Authority role: defines a root contract, consumes nothing ---
+# WHY: an authority is the top of a contract chain. If it consumed a contract,
+# it would not be an authority.
+authority_role_must_not_consume_contract = true
+
+# --- Domain-contract role: defines its own contract, consumes exactly one upstream ---
+# WHY: a domain-contract composes an upstream contract, so it must declare what
+# it consumes for the resolver to resolve.
+domain_contract_role_must_consume_contract = true
+
+# WHY: a domain-contract must not consume itself — that would be a bootstrap loop
+# (resolving its own vocabulary from itself).
+domain_contract_must_not_consume_self = true
+
+# NOTE (intentionally not a rule): a domain contract is its own authority
+# (contract_authority_must_equal_self) and cannot consume itself
+# (domain_contract_must_not_consume_self). Together these entail that a domain
+# contract never consumes its own authority, so no consume-own-authority rule is
+# added — it would be a derived restatement that could drift from its premises.
 
 # ------------------------------------------------------------
 # Notes

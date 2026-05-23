@@ -1,4 +1,4 @@
-"""src/se_manifest_schema/commands/validate.py.
+"""src/se_manifest_schema/commands/validate_manifest.py.
 
 Validate any manifest against the schema.
 Safe to run in any repo; no sync, no schema internal check.
@@ -11,6 +11,8 @@ from se_manifest_schema.load import load_manifest, load_schema
 from se_manifest_schema.types.manifest_schema import ManifestSchemaData
 from se_manifest_schema.validate_contract import validate_tag
 from se_manifest_schema.validate_manifest import validate_manifest
+
+__all__ = ["run"]
 
 MANIFEST_FILE_NAME: Final[str] = "SE_MANIFEST.toml"
 

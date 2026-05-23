@@ -3,7 +3,8 @@
 [![PyPI](https://img.shields.io/pypi/v/se-manifest-schema?logo=pypi&label=pypi)](https://pypi.org/project/se-manifest-schema/)
 [![Docs Site](https://img.shields.io/badge/docs-site-blue?logo=github)](https://structural-explainability.github.io/se-manifest-schema/)
 [![Repo](https://img.shields.io/badge/repo-GitHub-black?logo=github)](https://github.com/structural-explainability/se-manifest-schema)
-[![Python 3.15+](https://img.shields.io/badge/python-3.15%2B-blue?logo=python)](./pyproject.toml)
+[![Python 3.14](https://img.shields.io/badge/python-3.14%2B-blue?logo=python)](./pyproject.toml)
+[![Python 3.15 Ready](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/python-315-ready.yml/badge.svg?branch=main)](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/python-315-ready.yml)
 [![License](https://img.shields.io/badge/license-MIT-yellow.svg)](./LICENSE)
 
 [![CI](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/ci-python-zensical.yml/badge.svg?branch=main)](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/ci-python-zensical.yml)
@@ -48,7 +49,7 @@ code .
 # uv cache clean
 
 uv self update
-uv python pin 3.15
+uv python pin 3.14
 uv sync --extra dev --extra docs --upgrade
 
 uvx pre-commit install
@@ -59,16 +60,13 @@ uvx pre-commit run --all-files
 git add -A
 uvx pre-commit run --all-files
 
-# validate
-uv run python -m se_manifest_schema validate --strict
-
-# validate schema source of truth (this repo only)
+# validate schema (this repo only)
 uv run se-manifest validate-schema --strict
 
-# validate repo SE_MANIFEST.toml against schema (also used downstream)
-uv run se-manifest validate --strict
+# validate manifest (all repos)
+uv run se-manifest validate-manifest --strict
 
-# do chores
+# types, tests, docs
 uv run python -m pyright
 uv run python -m pytest
 uv run python -m zensical build

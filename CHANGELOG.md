@@ -11,26 +11,47 @@ and this project adheres to **[Semantic Versioning](https://semver.org/spec/v2.0
 
 ## [Unreleased]
 
-### Added - 2026-05-16
+---
 
-- Added repository classes for:
-  - `contract`
-  - `record_system`
-  - `verification`
-- Added support for Accountable Record application-layer repositories:
-  - `se-accountable-record`
-  - `judicial-record`
-  - `civic-institutional-record`
-  - `se-verification-judicial-record`
-  - `se-verification-civic-institutional-record`
-- Added manifest class rules for language-neutral contracts, domain record
-  systems, and verification repositories.
-- Added validation field support for:
-  - `entrypoint`
-  - `export_check_entrypoint`
-  - `reference_entrypoint`
-  - `strict_entrypoint`
-  - `tag_entrypoint`
+## [0.4.0] - 2026-05-23
+
+### Added
+
+- Added repository class support for generic contract engine repositories:
+  - `engine`
+- Added manifest class rules for contract engine repositories, including:
+  - `se-{focus}-kit`
+  - `se-{focus}-engine`
+- Added contract role support for:
+  - `authority`
+  - `domain-contract`
+- Added contract validation rules requiring contract repositories to declare:
+  - `contract_role`
+  - `contract_authority`
+  - `contract_version`
+- Added contract validation rules distinguishing root contract authorities from
+  domain contracts:
+  - contract authorities must not consume another contract
+  - domain contracts must consume one upstream contract
+  - domain contracts must not consume themselves
+  - contract authority must equal the repository's own name
+
+### Changed
+
+- Updated contract repository name patterns to allow `*-record`
+  repositories, including `accountable-record`, `judicial-record`, and
+  `civic-record`, to declare `class = "contract"` when they define contracts
+  rather than operational record systems.
+- Updated manifest filename validation to allow both supported manifest names:
+  - `SE_MANIFEST.toml`
+  - `MANIFEST.toml`
+- Replaced exact manifest filename validation with allowed manifest filename
+  validation.
+- Clarified that repository class is declared explicitly by `repo.class`; name
+  patterns validate compatibility with the declared class and are not the sole
+  source of class inference.
+
+---
 
 ---
 
@@ -132,16 +153,16 @@ Follow these steps exactly when creating a new release.
 1.2. `CITATION.cff` - update `version` and `date-released`
 1.3. CHANGELOG.md: add section, move unreleased entries, update links
 
-### Task 2. Sync and Validate
-
-Sync command reads `CITATION.cff` version and `date-released`
-and updates `pyproject.toml` fallback-version.
+### Task 2. Validate
 
 ```shell
 uv sync --extra dev --extra docs --upgrade
-uv run se-manifest sync-version
+
 uv run se-manifest validate-schema --strict
-uv run se-manifest validate --strict
+
+uv run se-manifest check-version
+uv run se-manifest validate-manifest --strict
+
 git add -A
 uvx pre-commit run --all-files
 uv run python -m pyright
@@ -189,7 +210,8 @@ git push origin :refs/tags/vX.Z.Y
 
 ## Links
 
-[Unreleased]: https://github.com/structural-explainability/se-manifest-schema/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/structural-explainability/se-manifest-schema/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.4.0
 [0.3.0]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.3.0
 [0.2.3]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.2.3
 [0.2.2]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.2.2

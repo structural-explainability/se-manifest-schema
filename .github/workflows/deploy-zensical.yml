@@ -29,8 +29,7 @@ permissions:
 env:
   PYTHONUNBUFFERED: "1"     # WHY: Real-time log output in CI.
   PYTHONIOENCODING: "utf-8" # WHY: Consistent encoding across platforms.
-  PYTHON_VERSION: "3.15"
-  UV_PYTHON: "3.15"
+  PYTHON_VERSION: "3.14"
 
 concurrency:
   group: pages-${{ github.ref }}

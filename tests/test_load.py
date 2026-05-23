@@ -23,11 +23,24 @@ def test_get_git_tag_not_found() -> None:
         get_git_tag()
 
 
-def test_load_toml_valid(tmp_path: Path) -> None:
-    f = tmp_path / "test.toml"
-    f.write_text('[meta]\nversion = "1.0.0"\n', encoding="utf-8")
-    data = load_toml(f)
-    assert data["meta"]["version"] == "1.0.0"
+def test_get_repo_version_missing_repo() -> None:
+    with pytest.raises(ValueError, match="repo"):
+        get_repo_version({})
+
+
+def test_get_repo_version_missing_version() -> None:
+    with pytest.raises(ValueError, match="version"):
+        get_repo_version({"repo": {"name": "x"}})
+
+
+def test_get_repo_version_valid() -> None:
+    manifest = {"repo": {"version": "0.2.0", "name": "x"}}
+    assert get_repo_version(manifest) == "0.2.0"
+
+
+def test_load_manifest_missing(tmp_path: Path) -> None:
+    with pytest.raises(FileNotFoundError, match="MANIFEST.toml"):
+        load_manifest(tmp_path / "MANIFEST.toml")
 
 
 def test_load_schema_found() -> None:
@@ -39,21 +52,8 @@ def test_load_schema_found() -> None:
     assert data
 
 
-def test_load_manifest_missing(tmp_path: Path) -> None:
-    with pytest.raises(FileNotFoundError, match="MANIFEST.toml"):
-        load_manifest(tmp_path / "MANIFEST.toml")
-
-
-def test_get_repo_version_valid() -> None:
-    manifest = {"repo": {"version": "0.2.0", "name": "x"}}
-    assert get_repo_version(manifest) == "0.2.0"
-
-
-def test_get_repo_version_missing_repo() -> None:
-    with pytest.raises(ValueError, match="repo"):
-        get_repo_version({})
-
-
-def test_get_repo_version_missing_version() -> None:
-    with pytest.raises(ValueError, match="version"):
-        get_repo_version({"repo": {"name": "x"}})
+def test_load_toml_valid(tmp_path: Path) -> None:
+    f = tmp_path / "test.toml"
+    f.write_text('[meta]\nversion = "1.0.0"\n', encoding="utf-8")
+    data = load_toml(f)
+    assert data["meta"]["version"] == "1.0.0"

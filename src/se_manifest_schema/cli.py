@@ -1,46 +1,92 @@
-"""src/se_manifest_schema/cli.py.
+"""Command-line interface for se-manifest-schema.
 
-Command-line interface.
-Pure dispatcher; owns argument parsing only.
-All logic lives in commands/.
+This module parses arguments and dispatches commands.
+Command behavior lives in se_manifest_schema.commands.
 
-Entry points:
-  uv run se-manifest validate
-  uv run se-manifest validate --strict --require-tag
-  uv run se-manifest validate --path path/to/SE_MANIFEST.toml
-  uv run se-manifest validate-schema
-  uv run se-manifest validate-schema --strict
-  uv run se-manifest sync-version
+Commands:
+uv run se-manifest validate-schema
 
-  uv run python -m se_manifest_schema validate
-  uv run python -m se_manifest_schema validate-schema
-  uv run python -m se_manifest_schema sync-version
+uv run se-manifest validate-manifest
+uv run se-manifest validate-manifest --strict
+
+uv run se-manifest check-version
+uv run se-manifest check-version --require-tag
 """
 
 import argparse
+from collections.abc import Callable, Sequence
 from pathlib import Path
 
-from se_manifest_schema.commands import sync_version, validate, validate_schema
+from se_manifest_schema.commands import (
+    check_version,
+    validate_manifest,
+    validate_schema,
+)
+
+__all__ = ["build_parser", "main"]
+
+CommandFunc = Callable[[argparse.Namespace], int]
+
+EXIT_NO_COMMAND = 2
+
+
+def _run_check_version(args: argparse.Namespace) -> int:
+    """Check that the version is consistent across CITATION.cff and pyproject.toml."""
+    return check_version.run(require_tag=args.require_tag)
+
+
+def _run_validate_manifest(args: argparse.Namespace) -> int:
+    """Validate a repository manifest against the schema."""
+    return validate_manifest.run(
+        path=args.path,
+        strict=args.strict,
+        require_tag=args.require_tag,
+    )
+
+
+def _run_validate_schema(args: argparse.Namespace) -> int:
+    """Validate manifest-schema.toml internal consistency."""
+    return validate_schema.run(strict=args.strict)
 
 
 def build_parser() -> argparse.ArgumentParser:
     """Build the argument parser."""
     parser = argparse.ArgumentParser(
         prog="se-manifest",
-        description="Validate and sync SE_MANIFEST.toml files for se Interfaces repos.",
+        description="Validate SE repository manifests.",
     )
-    subparsers = parser.add_subparsers(dest="command")
+    subparsers = parser.add_subparsers(dest="command", required=False)
 
-    # === validate ===
+    # === CHECK VERSION COMMAND ===
+
+    version_parser = subparsers.add_parser(
+        "check-version",
+        help=(
+            "Check that CITATION.cff and pyproject.toml fallback-version agree. "
+            "Reports a mismatch; does not modify any file."
+        ),
+    )
+    version_parser.add_argument(
+        "--require-tag",
+        action="store_true",
+        help="Also require the version to match the current git tag.",
+    )
+    version_parser.set_defaults(func=_run_check_version)
+
+    # === VALIDATE MANIFEST COMMAND ===
+
     validate_parser = subparsers.add_parser(
-        "validate",
-        help="Validate SE_MANIFEST.toml against the schema. Safe for all repos.",
+        "validate-manifest",
+        help="Validate MANIFEST.toml or SE_MANIFEST.toml against the SE schema.",
     )
     validate_parser.add_argument(
         "--path",
         type=Path,
         default=None,
-        help="Path to SE_MANIFEST.toml (default: ./SE_MANIFEST.toml).",
+        help=(
+            "Path to SE_MANIFEST.toml or MANIFEST.toml. "
+            "Defaults to the first supported manifest found."
+        ),
     )
     validate_parser.add_argument(
         "--strict",
@@ -50,61 +96,44 @@ def build_parser() -> argparse.ArgumentParser:
     validate_parser.add_argument(
         "--require-tag",
         action="store_true",
-        help="Require CITATION.cff version to match current git tag.",
+        help="Require CITATION.cff version to match the current git tag.",
     )
+    validate_parser.set_defaults(func=_run_validate_manifest)
 
-    # === validate-schema ===
-    vs_parser = subparsers.add_parser(
+    # === VALIDATE SCHEMA COMMAND ===
+
+    schema_parser = subparsers.add_parser(
         "validate-schema",
-        help="Validate manifest-schema.toml internal consistency. This repo only.",
+        help="Validate manifest-schema.toml internal consistency.",
     )
-    vs_parser.add_argument(
+    schema_parser.add_argument(
         "--strict",
         action="store_true",
         help="Treat warnings as errors.",
     )
-    vs_parser.add_argument(
-        "--require-tag",
-        action="store_true",
-        help="Require CITATION.cff version to match current git tag.",
-    )
-
-    # === sync-version ===
-    subparsers.add_parser(
-        "sync-version",
-        help="Sync pyproject.toml fallback-version from CITATION.cff. This repo only.",
-    )
+    schema_parser.set_defaults(func=_run_validate_schema)
 
     return parser
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv: Sequence[str] | None = None) -> int:
     """Run the command-line interface.
 
+    Args:
+        argv: Optional list of command-line arguments. If None, uses sys.argv.
+
     Returns:
-        0 on success, 1 on error, 2 if no command given.
+        Exit code from the executed command, or EXIT_NO_COMMAND if no command was given.
     """
     parser = build_parser()
     args = parser.parse_args(argv)
 
-    if args.command == "validate":
-        return validate.run(
-            path=args.path,
-            strict=args.strict,
-            require_tag=args.require_tag,
-        )
+    func: CommandFunc | None = getattr(args, "func", None)
+    if func is None:
+        parser.print_help()
+        return EXIT_NO_COMMAND
 
-    if args.command == "validate-schema":
-        return validate_schema.run(
-            strict=args.strict,
-            require_tag=args.require_tag,
-        )
-
-    if args.command == "sync-version":
-        return sync_version.run()
-
-    parser.print_help()
-    return 2
+    return func(args)
 
 
 if __name__ == "__main__":

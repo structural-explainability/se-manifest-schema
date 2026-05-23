@@ -1,20 +1,16 @@
 # ============================================================
 # pyproject.toml (Python project configuration)
 # ============================================================
-# Updated: 2026-04-30
-# REQ.PYTHON: Python projects MUST include pyproject.toml as the single source of truth.
-# WHY: Centralizes project configuration.
-# CUSTOM: Update identity and build tool src folders.
 
 # ============================================================
-# SECTION 1: PROJECT IDENTITY (name, version, CUSTOM dependencies)
+# SECTION 1: PROJECT IDENTITY (name, version, dependencies)
 # ============================================================
 
 [project]
 name = "se-manifest-schema" # Package distribution name (lowercase and dashes).
 readme = "README.md"
-requires-python = ">=3.15"
-dynamic = ["version"] # WHY: Version is computed from git tags at build time (see [tool.hatch.version] below).
+requires-python = ">=3.14"
+dynamic = ["version"] # WHY: Version is computed from git tags at build time (see [tool.hatch.version]).
 description = "Canonical SE_MANIFEST.toml schema and validation for the Structural Explainability ecosystem."
 license = { file = "LICENSE" }
 authors = [
@@ -25,7 +21,7 @@ classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.15",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Software Development :: Quality Assurance",
     "Typing :: Typed",
@@ -37,35 +33,29 @@ keywords = [
     "validation",
     "toml",
 ]
-dependencies = [
-    "PyYAML",  # WHY: Required to read version from CITATION.cff during sync.
-]
-
+dependencies = []
 
 [project.optional-dependencies]
 # WHY: Optional dependency groups keep the core install clean and focused.
 dev = [
     # REQ.DEV.DEPS: External packages used for linting, testing, type checking, etc.
     "build", # WHY: build tool required for packaging and publishing.
-    "packaging",  # WHY: Required by validate-pyproject for dependency and license validation.
     "pre-commit",
     "pyright",
     "pytest",
     "pytest-cov",
     "ruff",
-    "twine",  # WHY: Required for artifact validation (twine check dist/*).
+    "twine", # WHY: Required for artifact validation (twine check dist/*).
 ]
 
 docs = [
     "mkdocstrings-python", # WHY: Required for API reference generation in documentation.
-    "zensical==0.0.37", # WHY: Link resolution fails with newer versions; pinning to a known working version.,
+    "zensical",
 ]
 
 [project.scripts]
 se-manifest = "se_manifest_schema.cli:main"
-# WHY: Defines the CLI entry point. Only one:
-# one tool, multiple subcommands is clean and
-# matches how tools like git and uv work
+# WHY: Single CLI entry point.
 
 [project.urls]
 Homepage = "https://github.com/structural-explainability/se-manifest-schema"
@@ -83,27 +73,13 @@ Changelog = "https://github.com/structural-explainability/se-manifest-schema/blo
 [tool.pyright]
 # CUSTOM: Pyright configuration for static type checking.
 # WHY: Strict type checking helps catch bugs early.
-include = ["src"] # WHY: Include both source and test code for comprehensive type checking.
-extraPaths = ["src"] # WHY: Ensure imports are resolved relative to src/ for consistent behavior across environments.
+include = ["src", "tests"] # WHY: Type-check both source and tests.
+extraPaths = ["src"] # WHY: Resolve imports relative to src/ for consistent behavior across environments.
 exclude = ["**/node_modules", "**/.*", ".venv", "**/__pycache__", "dist", "build"]
-pythonVersion = "3.13" # 3.14 stubs incomplete in current pyright
+pythonVersion = "3.14"
 reportMissingTypeStubs = "none" # WHY: Avoid warnings from third-party libraries without type stubs.
-reportMissingImports = "warning" # WHY: Warn about missing imports to catch potential issues, but allow flexibility in notebooks and dynamic code.
-reportPrivateUsage = "none" # WHY: Allow usage of private members (e.g., _version.py) without warnings, common in Python projects.
-reportUntypedClassDecorator = "none"  # @dataclass stubs incomplete in current pyright
-reportArgumentType = "none"           # len() resolves to collections.abc, pyright bug
-reportUnknownMemberType = "none"      # WHY: confluent_kafka + duckdb stub gaps
-reportUnknownVariableType = "none"    # WHY: confluent_kafka + duckdb stub gaps
-reportCallIssue = "none"              # WHY: @dataclass frozen in KafkaSettings
-typeCheckingMode = "basic" # strict | basic | off
-
-[[tool.pyright.executionEnvironments]]
-root = "tests"
-reportUnknownMemberType = "none"
-reportUnknownVariableType = "none"
-reportUnknownParameterType = "none"
-reportMissingParameterType = "none"
-reportUnknownArgumentType = "none"
+reportPrivateUsage = "none" # WHY: Allow usage of private members (e.g., _version.py), common in Python projects.
+typeCheckingMode = "strict" # strict | basic | off
 
 # === PYTEST (VERIFY LOGIC) ===
 
@@ -111,7 +87,7 @@ reportUnknownArgumentType = "none"
 # WHY: Consistent test discovery and coverage visibility.
 minversion = "9.0"
 testpaths = ["tests"]
-addopts = "--cov=se_manifest_schema --cov-report=term-missing --cov-fail-under=75"
+addopts = "--cov=se_manifest_schema --cov-report=term-missing --cov-fail-under=90"
 
 # === RUFF (PYTHON FORMATTING AND LINTING) ===
 
@@ -129,7 +105,7 @@ exclude = [
 ]
 line-length = 88 # WHY: PEP 8 standard, wrap when possible.
 preview = false # WHY: Stable features only; avoid preview features.
-target-version = "py313" # WHY: 3.14 not available yet; match latest supported Python version.
+target-version = "py314" # WHY: match latest supported Python version.
 unsafe-fixes = false # WHY: Avoid potentially unsafe automatic fixes.
 
 [tool.ruff.format]
@@ -222,11 +198,11 @@ packages = ["src/se_manifest_schema"]
 # Place it inside the wheel package at se_manifest_schema/manifest-schema.toml.
 
 [tool.hatch.version]
-# WHY: Version derived from git tags at build time
+# Used when no git tags present (fresh clone, CI). Keep in sync with CITATION.cff.
+fallback-version = "0.4.0"
+# WHY: Version derived from git tags at build time.
 source = "vcs"
-# WHY: Allow hatch-vcs/setuptools-scm to find the Git root when the project
-# is built from a subdirectory, temporary build directory, or isolated build env.
+# WHY: Allow hatch-vcs to find the Git root when built from a subdirectory,
+# temporary build directory, or isolated build env.
 search_parent_directories = true
-# Used when no git tags present (fresh clone, CI).
-fallback-version = "0.3.0"
 tag-pattern = "^(?:v)?(?P<version>\\d+\\.\\d+\\.\\d+)$"

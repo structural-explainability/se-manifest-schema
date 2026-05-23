@@ -8,21 +8,9 @@ from pathlib import Path
 from typing import Final
 from unittest.mock import patch
 
-from se_manifest_schema.commands.validate import run
+from se_manifest_schema.commands.validate_manifest import run
 
 MANIFEST_FILE_NAME: Final[str] = "SE_MANIFEST.toml"
-
-
-def test_validate_own_manifest_passes() -> None:
-    """run() against this repo's own manifest file must return 0."""
-    repo_root = Path(__file__).parent.parent.parent
-    old = Path.cwd()
-    os.chdir(repo_root)
-    try:
-        result = run()
-        assert result == 0
-    finally:
-        os.chdir(old)
 
 
 def test_validate_explicit_path_passes() -> None:
@@ -49,12 +37,13 @@ def test_validate_missing_schema_returns_1(tmp_path: Path) -> None:
         os.chdir(old)
 
 
-def test_validate_strict_passes_when_no_warnings() -> None:
+def test_validate_own_manifest_passes() -> None:
+    """run() against this repo's own manifest file must return 0."""
     repo_root = Path(__file__).parent.parent.parent
     old = Path.cwd()
     os.chdir(repo_root)
     try:
-        result = run(strict=True)
+        result = run()
         assert result == 0
     finally:
         os.chdir(old)
@@ -71,6 +60,17 @@ def test_validate_require_tag_fails_when_not_on_tag() -> None:
         ):
             result = run(require_tag=True)
             assert result == 1
+    finally:
+        os.chdir(old)
+
+
+def test_validate_strict_passes_when_no_warnings() -> None:
+    repo_root = Path(__file__).parent.parent.parent
+    old = Path.cwd()
+    os.chdir(repo_root)
+    try:
+        result = run(strict=True)
+        assert result == 0
     finally:
         os.chdir(old)
 
