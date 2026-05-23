@@ -1,7 +1,6 @@
 # SE Manifest Schema
 
-Defines the structure and validation rules for `SE_MANIFEST.toml`
-across the Structural Explainability ecosystem.
+Defines the structure and validation rules for SE repository manifests.
 
 ## Contents
 
@@ -11,9 +10,17 @@ across the Structural Explainability ecosystem.
 
 ## What this repo owns
 
-One file: `manifest-schema.toml` at the repository root.
+This repository owns the canonical manifest schema:
 
-It defines what sections, fields, and class requirements
-are valid in any `SE_MANIFEST.toml`.
-Downstream repos import `validate_manifest` to check
-their own manifests against this schema.
+- `manifest-schema.toml`
+
+The schema defines valid manifest sections, fields, repository classes,
+and validation rules for SE-family repository manifests.
+
+Supported manifest filenames are:
+
+- `SE_MANIFEST.toml`
+- `MANIFEST.toml`
+
+Downstream repositories validate their own manifests against this schema by
+using the `se-manifest` command-line interface.

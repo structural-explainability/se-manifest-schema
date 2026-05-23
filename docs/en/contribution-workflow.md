@@ -4,10 +4,10 @@ This document defines how changes are made to `se-manifest-schema`.
 
 ## Principles
 
-- This repo owns only `manifest-schema.toml`
-- Changes here affect all downstream repos that declare `SE_MANIFEST.toml`
-- Validate before committing
-- Tag every release — downstream repos pin by tag
+- This repo owns `manifest-schema.toml`.
+- Changes here affect downstream repositories that validate against this schema.
+- Validate before committing.
+- Tag every release.
 
 ## Standard workflow
 
@@ -17,59 +17,58 @@ Changes may include:
 
 - adding or modifying section definitions
 - adding or modifying field definitions
-- adding or modifying class requirements
+- adding or modifying repository class requirements
 - updating validation rules
 
 ### 2. Validate
 
 ```shell
-uv run python -m se_manifest_schema validate
-uv run pytest
+uv run se-manifest validate-schema
+uv run se-manifest validate-manifest --strict
+uv run se-manifest check-version
+uv run python -m pytest
 ```
 
-### 3. Commit and tag
+### 3. Commit and release
 
-```shell
-git add -A
-git commit -m "Description of change"
-git tag vX.Y.Z -m "X.Y.Z"
-git push origin main
-git push origin vX.Y.Z
-```
+See `CHANGELOG.md` for the release workflow.
 
 ## Common tasks
 
 ### Add a new section
 
-1. Add `[section.name]` with `allowed_fields` list
-2. Add `[field.name.field_name]` for every field in `allowed_fields`
-3. Add section to relevant `[class.*]` `optional_sections` or `required_sections`
-4. Validate
+1. Add `[section.name]` with an `allowed_fields` list.
+2. Add field definitions for every field in `allowed_fields`.
+3. Add the section to relevant class `required_sections` or `optional_sections`.
+4. Validate.
 
 ### Add a new field to an existing section
 
-1. Add field name to `[section.name]` `allowed_fields`
-2. Add `[field.section_name.field_name]` definition with `type` and `required`
-3. Validate
+1. Add the field name to the section's `allowed_fields`.
+2. Add the field definition with `type` and `required`.
+3. Validate.
 
 ### Add a new repository class
 
-1. Add `[class.name]` with all required fields
-2. Validate
+1. Add a `[class.name]` entry.
+2. Define name patterns, layer roles, required sections, optional sections,
+   forbidden sections, and required compatibility fields.
+3. Validate.
 
 ### Fix validation failure
 
-Always read the error message literally.
+Read the error message literally.
 
 Typical causes:
 
-- section referenced in class definition not declared in `[section.*]`
-- field listed in `allowed_fields` has no `[field.section.name]` definition
-- field type not in allowed set (`string`, `boolean`, `list[string]`)
-- class used in `SE_MANIFEST.toml` not declared in `[class.*]`
+- a section is referenced by a class but not declared in `[section.*]`
+- a field is listed in `allowed_fields` but has no field definition
+- a field type is not in the allowed set
+- a repository class is used but not declared in `[class.*]`
 
 ## Design constraint
 
-This repo defines structure only.
-It does not validate downstream `SE_MANIFEST.toml` files directly.
-Downstream repos import `validate_manifest` and run it themselves.
+This repo defines manifest structure and manifest validation rules.
+
+It does not own downstream repository content, downstream release procedure,
+or domain-specific contract data.
