@@ -403,7 +403,10 @@ forbidden_sections = []
 required_compatibility_fields = ["constitution", "kernel"]
 
 [class.admin]
-required_repo_name_patterns = ["se-admin"]
+required_repo_name_patterns = [
+    "se-admin",
+    ".github",
+]
 required_layer_roles = ["administration"]
 required_sections = [
     "meta",
