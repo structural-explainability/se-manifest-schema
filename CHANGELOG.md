@@ -13,6 +13,14 @@ and this project adheres to **[Semantic Versioning](https://semver.org/spec/v2.0
 
 ---
 
+## [0.4.1] - 2026-05-23
+
+### Added
+
+- added to class.admin the .github repo
+
+---
+
 ## [0.4.0] - 2026-05-23
 
 ### Added
@@ -210,7 +218,8 @@ git push origin :refs/tags/vX.Z.Y
 
 ## Links
 
-[Unreleased]: https://github.com/structural-explainability/se-manifest-schema/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/structural-explainability/se-manifest-schema/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.4.1
 [0.4.0]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.4.0
 [0.3.0]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.3.0
 [0.2.3]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.2.3
