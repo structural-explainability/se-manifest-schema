@@ -181,7 +181,7 @@ uv run python -c "import pathlib, zipfile; wheels=list(pathlib.Path('dist').glob
 
 ```shell
 git add -A
-git commit -m "Prep X.Y.Z"
+git commit -m "Prepare X.Y.Z"
 git push -u origin main
 ```
 
@@ -195,7 +195,7 @@ git push origin vX.Y.Z
 ### Task 5. Verify tag consistency
 
 ```shell
-uv run python -m se_manifest_schema validate --strict --require-tag
+uv run se-manifest check-version --require-tag
 ```
 
 Confirms CITATION.cff version matches the pushed git tag.
