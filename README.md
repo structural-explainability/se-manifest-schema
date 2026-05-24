@@ -8,9 +8,11 @@
 [![License](https://img.shields.io/badge/license-MIT-yellow.svg)](./LICENSE)
 
 [![CI](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/ci-python-zensical.yml/badge.svg?branch=main)](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/ci-python-zensical.yml)
-[![Docs](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/deploy-zensical.yml/badge.svg?branch=main)](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/deploy-zensical.yml)
-[![Release](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/release-pypi.yml/badge.svg?branch=main)](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/release-pypi.yml)
+[![Docs-Deploy](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/deploy-zensical.yml/badge.svg?branch=main)](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/deploy-zensical.yml)
+[![Pre-Release](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/pre-release.yml/badge.svg?branch=main)](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/pre-release.yml)
+[![Release](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/release-pypi.yml/badge.svg)](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/release-pypi.yml)
 [![Links](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/links.yml/badge.svg?branch=main)](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/links.yml)
+[![Dependabot](https://img.shields.io/badge/Dependabot-enabled-brightgreen.svg)](https://github.com/structural-explainability/se-manifest-schema/security)
 
 > Structural Explainability (SE) Manifest Schema
 

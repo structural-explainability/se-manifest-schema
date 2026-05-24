@@ -49,8 +49,9 @@ dev = [
 ]
 
 docs = [
-    "mkdocstrings-python", # WHY: Required for API reference generation in documentation.
+    # REQ.DOCS.DEPS: External packages used to generate project documentation.
     "zensical",
+    "mkdocstrings[python]", # WHY: Auto-generate API docs from docstrings.
 ]
 
 [project.scripts]
