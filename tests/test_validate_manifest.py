@@ -399,3 +399,90 @@ def _domain_contract_manifest() -> dict[str, Any]:
             "consumes_contract_from": "accountable-record",
         },
     }
+
+
+# ── additional branch coverage ─────────────────────────────────────────────────
+
+def test_missing_repo_class_string_detected() -> None:
+    manifest = _minimal_manifest()
+    manifest["repo"] = {"name": "se-test"}  # class missing entirely
+    errors = validate_manifest(manifest, _minimal_schema())
+    assert any("[repo].class" in e for e in errors)
+
+
+def test_missing_repo_name_string_detected() -> None:
+    manifest = _minimal_manifest()
+    manifest["repo"] = {"class": "test_class"}  # name missing
+    errors = validate_manifest(manifest, _minimal_schema())
+    assert any("[repo].name" in e for e in errors)
+
+
+def test_required_field_missing_in_section_detected() -> None:
+    schema = cast(
+        ManifestSchemaData,
+        {
+            **_minimal_schema(),
+            "field": {
+                "repo": {
+                    "name": {"type": "string", "required": True},
+                    "class": {"type": "string", "required": True},
+                },
+                "scope": {
+                    "includes": {"type": "list[string]", "required": True},
+                    "excludes": {"type": "list[string]", "required": True},
+                },
+            },
+        },
+    )
+    manifest = _minimal_manifest()
+    del manifest["scope"]["includes"]
+    errors = validate_manifest(manifest, schema)
+    assert any("includes" in e and "required field missing" in e for e in errors)
+
+
+def test_section_with_no_definition_is_skipped_without_require_known() -> None:
+    schema = cast(
+        ManifestSchemaData,
+        {
+            **_minimal_schema(),
+            "validation": {
+                "require_known_sections_only": False,
+                "require_known_fields_only": False,
+            },
+        },
+    )
+    manifest = _minimal_manifest()
+    manifest["extra_section"] = {"key": "value"}
+    errors = validate_manifest(manifest, schema)
+    # extra_section has no definition, so it should be silently skipped
+    assert all("extra_section" not in e for e in errors)
+
+
+def test_contract_section_non_dict_skips_contract_rules() -> None:
+    manifest = _authority_manifest()
+    manifest["contract"] = "not-a-dict"
+    # Replace schema so contract section is optional (won't fail on required section)
+    schema = cast(
+        ManifestSchemaData,
+        {
+            **_contract_schema(),
+            "class": {
+                "contract": {
+                    "required_sections": ["repo"],
+                    "optional_sections": ["contract"],
+                    "forbidden_sections": [],
+                }
+            },
+        },
+    )
+    errors = validate_manifest(manifest, schema)
+    # contract_role rules should be skipped; no contract_role error expected
+    assert not any("contract_role" in e for e in errors)
+
+
+def test_field_constraint_unknown_role_detected() -> None:
+    manifest = _authority_manifest()
+    manifest["contract"]["contract_role"] = "unknown-role"
+    errors = validate_manifest(manifest, _contract_schema())
+    assert any("allowed contract roles" in e for e in errors)
+
