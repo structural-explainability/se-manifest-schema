@@ -85,6 +85,24 @@ git commit -m "update"
 git push -u origin main
 ```
 
+Merging GH Agent code example
+
+```shell
+git fetch origin copilot/analyze-test-coverage
+git switch copilot/analyze-test-coverage
+uv sync --extra dev --extra docs --upgrade
+uvx pre-commit run --all-files
+git status
+
+git add -A
+uvx pre-commit run --all-files
+uv run python -m pyright
+uv run python -m pytest
+uv run se-manifest validate-schema --strict
+uv run se-manifest validate-manifest --strict
+uv run python -m zensical build
+```
+
 </details>
 
 ## Citation
