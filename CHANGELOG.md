@@ -13,6 +13,14 @@ and this project adheres to **[Semantic Versioning](https://semver.org/spec/v2.0
 
 ---
 
+## [0.4.2] - 2026-05-30
+
+### Added
+
+- added class.paper
+
+---
+
 ## [0.4.1] - 2026-05-23
 
 ### Added
@@ -160,6 +168,7 @@ Follow these steps exactly when creating a new release.
 1.1. `manifest-schema.toml` - update `version` when schema semantics or validator contract changes
 1.2. `CITATION.cff` - update `version` and `date-released`
 1.3. CHANGELOG.md: add section, move unreleased entries, update links
+1.4. `pyproject.toml` - update build system `fallback-version`
 
 ### Task 2. Validate
 
@@ -167,6 +176,7 @@ Follow these steps exactly when creating a new release.
 uv sync --extra dev --extra docs --upgrade
 
 uv run se-manifest validate-schema --strict
+uv run se-manifest verify-graph
 
 uv run se-manifest check-version
 uv run se-manifest validate-manifest --strict
@@ -218,7 +228,8 @@ git push origin :refs/tags/vX.Z.Y
 
 ## Links
 
-[Unreleased]: https://github.com/structural-explainability/se-manifest-schema/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/structural-explainability/se-manifest-schema/compare/v0.4.2...HEAD
+[0.4.2]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.4.2
 [0.4.1]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.4.1
 [0.4.0]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.4.0
 [0.3.0]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.3.0
@@ -226,3 +237,5 @@ git push origin :refs/tags/vX.Z.Y
 [0.2.2]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.2.2
 [0.2.1]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.2.1
 [0.2.0]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.2.0
+
+<!-- markdownlint-enable MD024 -->

@@ -1,0 +1,255 @@
+# ============================================================
+# role-capability-map.schema.toml
+# ============================================================
+# Schema for data/schema/role-capability-map.toml.
+#
+# Purpose:
+#   Defines the expected shape of the role/capability map consumed by graph
+#   verification, AR verifier profile derivation, and future Rust conformance.
+#
+# This is intentionally simpler than manifest-schema.toml. It validates one
+# control-plane artifact, not repository manifests.
+# ============================================================
+
+
+# ------------------------------------------------------------
+# Schema identity
+# ------------------------------------------------------------
+
+[meta]
+schema = "se-role-capability-map-schema"
+version = "0.1.0"
+status = "draft"
+title = "Structural Explainability Role Capability Map Schema"
+schema_id = "se-role-capability-map-schema-1"
+
+
+# ------------------------------------------------------------
+# File contract
+# ------------------------------------------------------------
+
+[file]
+filename = "role-capability-map.toml"
+path = "data/schema/role-capability-map.toml"
+human_legible = true
+machine_readable = true
+reviewable = true
+
+
+# ------------------------------------------------------------
+# Required top-level sections
+# ------------------------------------------------------------
+
+[sections]
+required = [
+    "schema",
+    "export",
+    "consumers",
+    "role_groups",
+    "capability_profiles",
+    "graph_permissions",
+    "layer_order",
+    "surface_buckets",
+]
+
+optional = []
+
+
+# ------------------------------------------------------------
+# Primitive field expectations
+# ------------------------------------------------------------
+
+[section.schema]
+required_fields = [
+    "schema_id",
+    "version",
+    "status",
+    "title",
+    "description",
+]
+
+[section.export]
+required_fields = [
+    "path",
+    "schema_path",
+]
+
+[section.consumers]
+required_fields = [
+    "graph_verifier",
+    "stage_verifier",
+    "future_rust_verifier",
+]
+
+
+# ------------------------------------------------------------
+# Role group registry expectations
+# ------------------------------------------------------------
+
+[role_groups]
+description = "Maps manifest repo classes to normalized role groups."
+key_type = "manifest_repo_class"
+value_type = "role_group"
+requires_nonempty = true
+
+
+# ------------------------------------------------------------
+# Capability profile expectations
+# ------------------------------------------------------------
+
+[capability_profiles]
+description = "Maps role groups to verifier/stage capabilities."
+key_type = "role_group"
+
+required_fields = [
+    "validates_target_materials",
+    "validates_resolution",
+    "requires_lock_artifact",
+    "exports_contract_artifacts",
+    "emits_human_reports",
+]
+
+field_type.validates_target_materials = "boolean"
+field_type.validates_resolution = "boolean"
+field_type.requires_lock_artifact = "boolean"
+field_type.exports_contract_artifacts = "boolean"
+field_type.emits_human_reports = "boolean"
+
+
+# ------------------------------------------------------------
+# Graph permission expectations
+# ------------------------------------------------------------
+
+[graph_permissions]
+description = "Defines graph-rule inputs for semantic dependency validation."
+
+required_fields = [
+    "semantic_edge_kinds",
+    "resolution_checked_edge_kinds",
+    "entry_point_role_groups",
+]
+
+field_type.semantic_edge_kinds = "list[string]"
+field_type.resolution_checked_edge_kinds = "list[string]"
+field_type.entry_point_role_groups = "list[string]"
+
+required_rule_tables = [
+    "no_core_depends_on_domain",
+    "no_interpretation_leak",
+    "no_contract_depends_on_implementation",
+    "no_theory_bypass",
+    "layer_monotonicity",
+]
+
+
+# ------------------------------------------------------------
+# Individual graph rule table expectations
+# ------------------------------------------------------------
+
+[graph_rule.no_core_depends_on_domain]
+required_fields = [
+    "source_role_groups",
+    "forbidden_target_role_groups",
+    "diagnostic",
+]
+
+[graph_rule.no_interpretation_leak]
+required_fields = [
+    "source_role_groups",
+    "forbidden_target_role_groups",
+    "diagnostic",
+]
+
+[graph_rule.no_contract_depends_on_implementation]
+required_fields = [
+    "source_role_groups",
+    "forbidden_target_role_groups",
+    "diagnostic",
+]
+
+[graph_rule.no_theory_bypass]
+required_fields = [
+    "source_role_groups",
+    "forbidden_target_role_groups",
+    "allowed_intermediate_role_groups",
+    "diagnostic",
+]
+
+[graph_rule.layer_monotonicity]
+required_fields = [
+    "diagnostic",
+    "uses_layer_order",
+]
+
+
+# ------------------------------------------------------------
+# Layer order expectations
+# ------------------------------------------------------------
+
+[layer_order]
+description = "Maps role groups to integer layer order values."
+key_type = "role_group"
+value_type = "integer"
+requires_nonempty = true
+
+
+# ------------------------------------------------------------
+# Surface bucket expectations
+# ------------------------------------------------------------
+
+[surface_buckets]
+description = "Defines the required semantic-role buckets for theory surface mirrors."
+
+required_fields = [
+    "required",
+    "constant_names",
+]
+
+field_type.required = "list[string]"
+field_type.constant_names = "list[string]"
+
+required_values.required = [
+    "types",
+    "predicates",
+    "axioms",
+    "theorems",
+    "witnesses",
+]
+
+required_values.constant_names = [
+    "SURFACE_TYPES",
+    "SURFACE_PREDICATES",
+    "SURFACE_AXIOMS",
+    "SURFACE_THEOREMS",
+    "SURFACE_WITNESSES",
+]
+
+
+# ------------------------------------------------------------
+# Validation rules
+# ------------------------------------------------------------
+
+[validation]
+require_known_sections_only = true
+require_required_sections = true
+require_required_fields = true
+require_nonempty_role_groups = true
+require_capability_profile_for_each_role_group = true
+require_layer_order_for_each_role_group = true
+require_graph_rule_diagnostics = true
+require_surface_bucket_contract = true
+
+
+# ------------------------------------------------------------
+# Notes
+# ------------------------------------------------------------
+
+[notes]
+artifact_role = "Versioned contract artifact for class-to-role, role-to-capability, and role-to-graph-permission derivation."
+
+non_goals = [
+    "replace manifest-schema.toml",
+    "define repository-local manifests",
+    "define runtime application configuration",
+    "encode domain semantics",
+]

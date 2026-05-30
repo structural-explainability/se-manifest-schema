@@ -1,5 +1,5 @@
 # ============================================================
-# .pre-commit-config.yaml (SE Manifest Schema)
+# .pre-commit-config.yaml (se-manifest-schema)
 # ============================================================
 # VARIANT: se-manifest-schema
 # Updated: 2026-04-30
@@ -121,15 +121,22 @@ repos:
         pass_filenames: false
         always_run: true
 
-      - id: se-schema-validate
-        name: E2) Validate schema internal consistency
+      - id: se-validate-role-capability-map
+        name: E2) Validate role-capability-map
+        language: system
+        entry: uv run se-manifest validate-role-capability-map
+        pass_filenames: false
+        always_run: true
+
+      - id: se-validate-schema
+        name: E3) Validate schema internal consistency
         language: system
         entry: uv run se-manifest validate-schema --strict
         pass_filenames: false
         always_run: true
 
-      - id: se-manifest-validate
-        name: E3) Validate manifest against schema
+      - id: se-validate-manifest
+        name: E4) Validate manifest against schema
         language: system
         entry: uv run se-manifest validate-manifest --strict
         pass_filenames: false

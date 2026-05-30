@@ -6,39 +6,38 @@
 # SE_MANIFEST.toml files in the Structural Explainability ecosystem.
 #
 # Navigation:
-#   [meta]                schema identity
-#   [manifest]            manifest file contract
-#   [manifest.identity]   required top-level fields
+#   [meta]                    schema identity
+#   [manifest]                manifest file contract
+#   [manifest.identity]       required manifest identity fields
 #
-#   FIELD DEFINITIONS     types and required status per field
-#   CLASS REGISTRY        which sections each repo class requires
-#   VALIDATION RULES      enforcement policy
-#   NOTES                 non-goals and manifest role
+#   SECTION REGISTRY          allowed sections and fields
+#   FIELD DEFINITIONS         types, required status, and constraints
+#   DEPENDENCY DECLARATIONS   dependency item shape and allowed kinds
+#   PROVIDES DECLARATIONS     provided artifacts and formalization metadata
+#   CLASS REGISTRY            which sections each repo class requires
+#   VALIDATION RULES          enforcement policy
+#   NOTES                     non-goals and manifest role
 # ============================================================
 
-
 [meta]
-schema = "se-manifest-schema"
-version = "0.4.0"
-status = "active"
-title = "Structural Explainability Manifest Schema"
 manifest_schema_id = "se-manifest-schema-1"
 purpose = "Defines required sections, fields, and validation rules for SE_MANIFEST.toml in the Structural Explainability ecosystem."
+schema = "se-manifest-schema"
+status = "active"
+title = "Structural Explainability Manifest Schema"
+version = "0.4.2"
 
 [manifest]
+allowed_filenames = ["SE_MANIFEST.toml", "MANIFEST.toml"]
 filename = "SE_MANIFEST.toml"
-allowed_filenames = [
-    "SE_MANIFEST.toml",
-    "MANIFEST.toml",
-]
 human_legible = true
 machine_readable = true
 reviewable = true
 
 [manifest.identity]
+schema_allowed = ["se-manifest-schema"]
 schema_field = "schema"
 schema_required = true
-schema_allowed = ["se-manifest-schema"]
 
 schema_url_field = "schema_url"
 schema_url_required = true
@@ -48,890 +47,1147 @@ schema_url_required = true
 # ------------------------------------------------------------
 
 [section.meta]
-required = true
-description = "Non-normative contextual information about the manifest and framework."
 allowed_fields = [
-    "framework",
-    "framework_url",
-    "framework_note",
-    "description",
-    "purpose",
+  "framework",
+  "framework_url",
+  "framework_note",
+  "description",
+  "purpose",
 ]
+description = "Non-normative contextual information about the manifest and framework."
+required = true
 
 [section.repo]
-required = true
-description = "Stable repository identity and declared class."
 allowed_fields = ["name", "org", "class", "kind", "status", "since", "summary"]
+description = "Stable repository identity and declared class."
+required = true
 
 [section.layer]
-required = true
-description = "Declared epistemic position."
 allowed_fields = ["space", "role"]
+description = "Declared epistemic position."
+required = true
 
 [section.depends]
-required = true
-description = "Declared upstream dependencies."
 allowed_fields = ["required", "optional"]
+description = "Declared upstream dependencies."
+required = true
 
 [section.provides]
-required = true
+allowed_fields = ["artifacts", "formalization"]
 description = "Artifacts intentionally provided and maintained."
-allowed_fields = ["artifacts"]
+required = true
 
 [section.contract]
-required = false
-description = "Formal contract metadata for repositories that define, implement, verify, or consume a contract."
 allowed_fields = [
-    "contract_version",
-    "contract_role",
-    "contract_authority",
-    "exports_verified_contract",
-    "consumes_contract_from",
+  "contract_version",
+  "contract_role",
+  "contract_authority",
+  "exports_verified_contract",
+  "consumes_contract_from",
 ]
+description = "Formal contract metadata for repositories that define, implement, verify, or consume a contract."
+required = false
 
 [section.exports]
-required = false
-description = "Machine-readable artifact paths exported by the repository."
 allowed_fields = [
-    "invariants",
-    "manifest_schema",
-    "regimes",
-    "relations",
-    "proofs",
-    "theorems",
+  "invariants",
+  "manifest_schema",
+  "role_capability_map",
+  "regimes",
+  "relations",
+  "proofs",
+  "theorems",
 ]
+description = "Machine-readable artifact paths exported by the repository."
+required = false
 
 [section.scope]
-required = true
-description = "Explicit semantic boundary."
 allowed_fields = ["includes", "excludes"]
+description = "Explicit semantic boundary."
+required = true
 
 [section.validation]
-required = false
-description = "Repository-local validation configuration."
 allowed_fields = [
-    "entrypoint",
-    "export_check_entrypoint",
-    "reference_entrypoint",
-    "strict_entrypoint",
-    "tag_entrypoint",
+  "entrypoint",
+  "export_check_entrypoint",
+  "graph_entrypoint",
+  "reference_entrypoint",
+  "strict_entrypoint",
+  "tag_entrypoint",
 ]
+description = "Repository-local validation configuration."
+required = false
 
 [section.naming]
-required = false
-description = "Repository naming conventions."
 allowed_fields = ["pattern"]
+description = "Repository naming conventions."
+required = false
 
 [section.governance]
-required = false
-description = "Governance authority declaration."
 allowed_fields = ["authority"]
+description = "Governance authority declaration."
+required = false
 
 [section.compatibility]
-required = false
-description = "Declared compatibility with constitutional and ecosystem components."
 allowed_fields = [
-    "constitution",
-    "kernel",
-    "mapspec",
-    "schema",
-    "profile",
-    "rules",
+  "constitution",
+  "kernel",
+  "mapspec",
+  "schema",
+  "profile",
+  "rules",
 ]
+description = "Declared compatibility with constitutional and ecosystem components."
+required = false
 
 [section.citation]
-required = true
-description = "Citation pointer metadata."
 allowed_fields = ["cff", "preferred", "bib_hint"]
+description = "Citation pointer metadata."
+required = true
 
 [section.traceability]
-required = true
-description = "Identifier resolution and traceability strategy."
 allowed_fields = ["identifier_map"]
+description = "Identifier resolution and traceability strategy."
+required = true
 
 # ------------------------------------------------------------
 # Field definitions
 # ------------------------------------------------------------
 
 [field.repo.name]
-type = "string"
-required = true
 constraints = ["nonempty", "ascii-repo-name", "matches-constitution-naming-law"]
+required = true
+type = "string"
 
 [field.repo.org]
-type = "string"
-required = true
 constraints = ["nonempty"]
+required = true
+type = "string"
 
 [field.repo.class]
-type = "string"
-required = true
 constraints = ["known-repo-class"]
+required = true
+type = "string"
 
 [field.repo.kind]
-type = "string"
-required = true
 constraints = ["nonempty"]
+required = true
+type = "string"
 
 [field.repo.status]
-type = "string"
-required = true
 constraints = ["known-status"]
+required = true
+type = "string"
 
 [field.repo.since]
-type = "string"
-required = true
 constraints = ["year-or-date-string"]
+required = true
+type = "string"
 
 [field.repo.summary]
-type = "string"
-required = true
 constraints = ["nonempty"]
+required = true
+type = "string"
 
 [field.layer.space]
-type = "string"
-required = true
 constraints = ["nonempty"]
+required = true
+type = "string"
 
 [field.layer.role]
-type = "string"
-required = true
 constraints = ["nonempty"]
+required = true
+type = "string"
+
+# --- depends ---
+# Each dependency item is a structured dependency declaration.
+# Legacy list[string] dependencies may be temporarily tolerated by validators
+# while manifests migrate, controlled by validation.allow_legacy_string_dependencies.
 
 [field.depends.required]
-type = "list[string]"
 required = true
+type = "list[dependency]"
 
 [field.depends.optional]
-type = "list[string]"
 required = true
+type = "list[dependency]"
+
+# ------------------------------------------------------------
+# Custom structured field types
+# ------------------------------------------------------------
+# These named types may be used inside field `type` declarations, including
+# list forms such as `list[dependency]`.
+# ------------------------------------------------------------
+
+[custom_types]
+allowed = ["dependency", "formalization"]
+
+[custom_type.dependency]
+description = "Structured repository dependency declaration."
+fields = "dependency_fields"
+kind = "record"
+
+[custom_type.formalization]
+description = "Structured formalization artifact declaration."
+fields = "provides_formalization_fields"
+kind = "record"
+
+[dependency_fields]
+allowed_fields = ["repo", "kind", "version", "reason"]
+
+[field.dependency.repo]
+constraints = ["nonempty", "ascii-repo-name"]
+required = true
+type = "string"
+
+[field.dependency.kind]
+constraints = ["known-dependency-kind"]
+required = true
+type = "string"
+
+[field.dependency.version]
+constraints = ["nonempty"]
+required = false
+type = "string"
+
+[field.dependency.reason]
+constraints = ["nonempty"]
+required = false
+type = "string"
+
+[dependency_kinds]
+allowed = [
+  "semantic",
+  "tooling",
+  "documentation",
+  "test",
+  "release",
+  "provenance",
+]
+
+# --- field provides artifacts ---
 
 [field.provides.artifacts]
-type = "list[string]"
 required = true
+type = "list[string]"
+
+[formalization_fields]
+allowed_fields = ["kind", "status", "symbols", "path", "reason"]
+
+# --- field provides formalization ---
+
+[field.provides.formalization]
+description = "Named formalization artifacts provided by this repository."
+required = false
+type = "map[formalization]"
+
+[provides_formalization_fields]
+allowed_fields = [
+    "kind",
+    "status",
+    "symbols",
+    "path",
+    "reason",
+]
+
+[field.provides.formalization.kind]
+constraints = ["known-formalization-kind"]
+required = true
+type = "string"
+
+[field.provides.formalization.status]
+constraints = ["known-formalization-status"]
+required = true
+type = "string"
+
+[field.provides.formalization.symbols]
+required = true
+type = "list[string]"
+
+[field.provides.formalization.path]
+constraints = ["relative-path"]
+required = false
+type = "string"
+
+[field.provides.formalization.reason]
+constraints = ["nonempty"]
+required = false
+type = "string"
+
+[formalization_kinds]
+allowed = [
+  "lean-theorem-set",
+  "lean-surface",
+  "classification-matrix",
+  "proof-artifact",
+]
+
+[formalization_statuses]
+allowed = ["canonical", "auxiliary", "transitional", "superseded"]
+
+# --- exports ---
 
 [field.exports.invariants]
-type = "string"
-required = false
 constraints = ["relative-path", "json-file"]
+required = false
+type = "string"
 
 [field.exports.manifest_schema]
-type = "string"
-required = false
 constraints = ["relative-path", "toml-file"]
+required = false
+type = "string"
+
+[field.exports.role_capability_map]
+constraints = ["relative-path", "toml-file"]
+required = false
+type = "string"
 
 [field.exports.regimes]
-type = "string"
-required = false
 constraints = ["relative-path", "json-file"]
+required = false
+type = "string"
 
 [field.exports.relations]
-type = "string"
-required = false
 constraints = ["relative-path", "json-file"]
+required = false
+type = "string"
 
 [field.exports.proofs]
-type = "string"
-required = false
 constraints = ["relative-path", "json-file"]
+required = false
+type = "string"
 
 [field.exports.theorems]
-type = "string"
-required = false
 constraints = ["relative-path", "json-file"]
+required = false
+type = "string"
 
 # --- contract ---
 
 [field.contract.contract_version]
-type = "string"
-required = false
 constraints = ["nonempty"]
+required = false
+type = "string"
 
 [field.contract.contract_role]
-type = "string"
-required = false
 constraints = ["known-contract-role"]
+required = false
+type = "string"
 
 [field.contract.contract_authority]
-type = "string"
-required = false
 constraints = ["nonempty"]
+required = false
+type = "string"
 
 [field.contract.exports_verified_contract]
-type = "boolean"
 required = false
+type = "boolean"
 
 [field.contract.consumes_contract_from]
-type = "string"
-required = false
 constraints = ["nonempty"]
+required = false
+type = "string"
 
 [contract_roles]
-allowed = [
-    "authority",
-    "domain-contract",
-]
+allowed = ["authority", "domain-contract"]
 
 # --- scope ---
 
 [field.scope.includes]
-type = "list[string]"
 required = true
+type = "list[string]"
 
 [field.scope.excludes]
-type = "list[string]"
 required = true
+type = "list[string]"
+
+# --- validation ---
+# These fields define the repository-local [validation] manifest section.
+# Do not put actual validation entrypoint values in manifest-schema.toml;
+# individual SE_MANIFEST.toml files declare them.
 
 [field.validation.entrypoint]
-type = "string"
 required = false
+type = "string"
 
 [field.validation.export_check_entrypoint]
-type = "string"
 required = false
+type = "string"
+
+[field.validation.graph_entrypoint]
+required = false
+type = "string"
 
 [field.validation.reference_entrypoint]
-type = "string"
 required = false
+type = "string"
 
 [field.validation.strict_entrypoint]
-type = "string"
 required = false
+type = "string"
 
 [field.validation.tag_entrypoint]
-type = "string"
 required = false
+type = "string"
+
+# --- naming and governance ---
 
 [field.naming.pattern]
-type = "string"
 required = false
+type = "string"
 
 [field.governance.authority]
-type = "string"
 required = false
+type = "string"
+
+# --- meta ---
 
 [field.meta.framework]
-type = "string"
 required = false
+type = "string"
 
 [field.meta.framework_url]
-type = "string"
 required = false
+type = "string"
 
 [field.meta.framework_note]
-type = "string"
 required = false
+type = "string"
 
 [field.meta.description]
-type = "string"
 required = false
+type = "string"
 
 [field.meta.purpose]
-type = "string"
 required = false
+type = "string"
+
+# --- compatibility ---
 
 [field.compatibility.constitution]
-type = "string"
 required = false
+type = "string"
 
 [field.compatibility.kernel]
-type = "string"
 required = false
+type = "string"
 
 [field.compatibility.mapspec]
-type = "string"
 required = false
+type = "string"
 
 [field.compatibility.schema]
-type = "list[string]"
 required = false
+type = "list[string]"
 
 [field.compatibility.profile]
-type = "list[string]"
 required = false
+type = "list[string]"
 
 [field.compatibility.rules]
-type = "list[string]"
 required = false
+type = "list[string]"
+
+# --- citation and traceability ---
 
 [field.citation.cff]
-type = "string"
 required = true
+type = "string"
 
 [field.citation.preferred]
-type = "string"
 required = true
+type = "string"
 
 [field.citation.bib_hint]
-type = "string"
 required = false
+type = "string"
 
 [field.traceability.identifier_map]
-type = "string"
 required = true
+type = "string"
 
 [class_fields]
 allowed_fields = [
-    "required_repo_name_patterns",
-    "required_layer_roles",
-    "required_sections",
-    "optional_sections",
-    "forbidden_sections",
-    "required_compatibility_fields",
+  "required_repo_name_patterns",
+  "required_layer_roles",
+  "required_sections",
+  "optional_sections",
+  "forbidden_sections",
+  "required_compatibility_fields",
 ]
+# ------------------------------------------------------------
+# CLASS REGISTRY (index) - all repo classes, alphabetical
+#
+# Class:
+#   The type of SE ecosystem responsibility this repository has
+#
+# Kind:
+#   The subtype of that class this repository belongs to
+#
+# Role:
+#   The role this repository plays in the SE dependency graph
+#
+# Repo class is the partition key.
+# Repo kind and layer role refine the class.
+# ------------------------------------------------------------
+#   adapter
+#   admin
+#   application
+#   constitution
+#   contract
+#   data_companion
+#   docs
+#   engine
+#   formal_contract
+#   govsrc
+#   implementation
+#   kernel
+#   manifest_schema
+#   mapping
+#   mapspec
+#   paper
+#   pilot
+#   policy
+#   profile
+#   record_system
+#   regimes
+#   rules
+#   schema
+#   spec
+#   theory
+#   tool
+#   verification
+#   verifier
+# ------------------------------------------------------------
 
 # ------------------------------------------------------------
 # Class-specific requirements (alphabetical by class name)
 # ------------------------------------------------------------
 
 [class.adapter]
-required_repo_name_patterns = ["se-adapter-{standard}"]
-required_layer_roles = ["adapter"]
-required_sections = [
-    "meta",
-    "repo",
-    "layer",
-    "depends",
-    "provides",
-    "scope",
-    "compatibility",
-    "citation",
-    "traceability",
-]
-optional_sections = ["validation", "naming", "governance"]
 forbidden_sections = []
+optional_sections = ["validation", "naming", "governance"]
 required_compatibility_fields = ["constitution", "kernel"]
+required_layer_roles = ["adapter"]
+required_repo_name_patterns = ["se-adapter-{standard}"]
+required_sections = [
+  "meta",
+  "repo",
+  "layer",
+  "depends",
+  "provides",
+  "scope",
+  "compatibility",
+  "citation",
+  "traceability",
+]
 
 [class.admin]
-required_repo_name_patterns = [
-    "se-admin",
-    ".github",
-]
-required_layer_roles = ["administration"]
-required_sections = [
-    "meta",
-    "repo",
-    "layer",
-    "depends",
-    "provides",
-    "scope",
-    "compatibility",
-    "citation",
-    "traceability",
-]
-optional_sections = ["contract", "validation", "naming", "governance"]
 forbidden_sections = []
+optional_sections = ["contract", "validation", "naming", "governance"]
 required_compatibility_fields = ["constitution"]
+required_layer_roles = ["administration"]
+required_repo_name_patterns = ["se-admin", ".github"]
+required_sections = [
+  "meta",
+  "repo",
+  "layer",
+  "depends",
+  "provides",
+  "scope",
+  "compatibility",
+  "citation",
+  "traceability",
+]
+
+[class.application]
+forbidden_sections = ["exports", "contract"]
+optional_sections = ["validation", "naming", "governance", "compatibility"]
+required_compatibility_fields = []
+required_layer_roles = ["application", "explorer", "interface"]
+required_repo_name_patterns = [
+  "se-{focus}-explorer",
+  "se-{focus}-ui",
+  "se-{focus}-app",
+]
+required_sections = [
+  "meta",
+  "repo",
+  "layer",
+  "depends",
+  "provides",
+  "scope",
+  "citation",
+  "traceability",
+]
 
 [class.constitution]
-required_repo_name_patterns = ["se-constitution"]
-required_layer_roles = ["constitution"]
-required_sections = [
-    "meta",
-    "repo",
-    "layer",
-    "depends",
-    "contract",
-    "provides",
-    "scope",
-    "citation",
-    "traceability",
-]
-optional_sections = ["compatibility", "validation", "naming", "governance"]
 forbidden_sections = []
+optional_sections = ["compatibility", "validation", "naming", "governance"]
 required_compatibility_fields = []
+required_layer_roles = ["constitution"]
+required_repo_name_patterns = ["se-constitution"]
+required_sections = [
+  "meta",
+  "repo",
+  "layer",
+  "depends",
+  "contract",
+  "provides",
+  "scope",
+  "citation",
+  "traceability",
+]
 
 [class.contract]
-required_repo_name_patterns = [
-    "{focus}",
-    "{focus}-contract",
-    "{focus}-record",
-    "se-{focus}",
-    "se-{focus}-contract",
-]
-required_layer_roles = ["contract", "language-neutral-contract"]
-required_sections = [
-    "meta",
-    "repo",
-    "layer",
-    "depends",
-    "provides",
-    "contract",
-    "scope",
-    "citation",
-    "traceability",
-]
-optional_sections = ["validation", "naming", "governance", "compatibility"]
 forbidden_sections = ["exports"]
+optional_sections = ["validation", "naming", "governance", "compatibility"]
 required_compatibility_fields = []
+required_layer_roles = ["contract", "language-neutral-contract"]
+required_repo_name_patterns = [
+  "{focus}",
+  "{focus}-contract",
+  "{focus}-record",
+  "se-{focus}",
+  "se-{focus}-contract",
+]
+required_sections = [
+  "meta",
+  "repo",
+  "layer",
+  "depends",
+  "provides",
+  "contract",
+  "scope",
+  "citation",
+  "traceability",
+]
 
 [class.data_companion]
-required_repo_name_patterns = [
-    "{focus}-data",
-    "{focus}-fixtures",
-    "{focus}-corpus",
+forbidden_sections = ["exports"]
+optional_sections = [
+  "validation",
+  "naming",
+  "governance",
+  "compatibility",
+  "contract",
 ]
+required_compatibility_fields = []
 required_layer_roles = [
-    "data-companion",
-    "fixture-data-companion",
-    "record-system-data-companion",
+  "data-companion",
+  "fixture-data-companion",
+  "record-system-data-companion",
+]
+required_repo_name_patterns = [
+  "{focus}-data",
+  "{focus}-fixtures",
+  "{focus}-corpus",
 ]
 required_sections = [
-    "meta",
-    "repo",
-    "layer",
-    "depends",
-    "provides",
-    "scope",
-    "citation",
-    "traceability",
+  "meta",
+  "repo",
+  "layer",
+  "depends",
+  "provides",
+  "scope",
+  "citation",
+  "traceability",
 ]
-optional_sections = [
-    "validation",
-    "naming",
-    "governance",
-    "compatibility",
-    "contract",
-]
-forbidden_sections = ["exports"]
-required_compatibility_fields = []
 
 [class.docs]
 # documentation layer; should not require operational compatibility
-required_repo_name_patterns = ["se-docs", "se-docs-{focus}"]
-required_layer_roles = ["documentation"]
-required_sections = [
-    "meta",
-    "repo",
-    "layer",
-    "depends",
-    "provides",
-    "scope",
-    "citation",
-    "traceability",
-]
-optional_sections = ["validation", "naming", "governance"]
 forbidden_sections = []
+optional_sections = ["validation", "naming", "governance"]
 required_compatibility_fields = []
+required_layer_roles = ["documentation"]
+required_repo_name_patterns = ["se-docs", "se-docs-{focus}"]
+required_sections = [
+  "meta",
+  "repo",
+  "layer",
+  "depends",
+  "provides",
+  "scope",
+  "citation",
+  "traceability",
+]
 
 [class.engine]
-required_repo_name_patterns = [
-    "se-{focus}-kit",
-    "se-{focus}-engine",
-]
-required_layer_roles = [
-    "engine",
-    "contract-engine",
-    "resolver-engine",
-]
-required_sections = [
-    "meta",
-    "repo",
-    "layer",
-    "depends",
-    "provides",
-    "scope",
-    "citation",
-    "traceability",
-    "validation",
-]
-optional_sections = [
-    "naming",
-    "governance",
-    "compatibility",
-]
-forbidden_sections = [
-    "contract",
-    "exports",
-]
+forbidden_sections = ["exports"]
+optional_sections = ["contract", "naming", "governance", "compatibility"]
 required_compatibility_fields = []
+required_layer_roles = ["engine", "contract-engine", "resolver-engine"]
+required_repo_name_patterns = ["se-{focus}-kit", "se-{focus}-engine"]
+required_sections = [
+  "meta",
+  "repo",
+  "layer",
+  "depends",
+  "provides",
+  "scope",
+  "citation",
+  "traceability",
+  "validation",
+]
 
 [class.formal_contract]
-required_repo_name_patterns = ["se-formal-contract"]
-required_layer_roles = ["formal-contract"]
-required_sections = [
-    "meta",
-    "repo",
-    "layer",
-    "depends",
-    "provides",
-    "exports",
-    "contract",
-    "scope",
-    "citation",
-    "traceability",
-]
-optional_sections = ["compatibility", "validation", "naming", "governance"]
 forbidden_sections = []
+optional_sections = ["compatibility", "validation", "naming", "governance"]
 required_compatibility_fields = []
+required_layer_roles = ["formal-contract"]
+required_repo_name_patterns = ["se-formal-contract"]
+required_sections = [
+  "meta",
+  "repo",
+  "layer",
+  "depends",
+  "provides",
+  "exports",
+  "contract",
+  "scope",
+  "citation",
+  "traceability",
+]
 
 [class.govsrc]
-required_repo_name_patterns = [
-    "se-govsrc-{jurisdiction}",
-    "se-govsrc-{jurisdiction}-{focus}",
-]
-required_layer_roles = ["source-registry"]
-required_sections = [
-    "meta",
-    "repo",
-    "layer",
-    "provides",
-    "scope",
-    "citation",
-    "traceability",
-]
-optional_sections = [
-    "depends",
-    "compatibility",
-    "validation",
-    "naming",
-    "governance",
-]
 forbidden_sections = []
+optional_sections = [
+  "depends",
+  "compatibility",
+  "validation",
+  "naming",
+  "governance",
+]
 required_compatibility_fields = []
+required_layer_roles = ["source-registry"]
+required_repo_name_patterns = [
+  "se-govsrc-{jurisdiction}",
+  "se-govsrc-{jurisdiction}-{focus}",
+]
+required_sections = [
+  "meta",
+  "repo",
+  "layer",
+  "provides",
+  "scope",
+  "citation",
+  "traceability",
+]
 
 [class.implementation]
-required_repo_name_patterns = [
-    "{focus}-py",
-    "{focus}-rs",
-    "{focus}-js",
-    "{focus}-java",
-    "{focus}-go",
-    "{focus}-implementation",
-]
+forbidden_sections = ["exports"]
+optional_sections = ["naming", "governance", "compatibility"]
+required_compatibility_fields = []
 required_layer_roles = [
-    "implementation",
-    "contract-implementation",
-    "verifier-implementation",
+  "implementation",
+  "contract-implementation",
+  "verifier-implementation",
+]
+required_repo_name_patterns = [
+  "{focus}-py",
+  "{focus}-rs",
+  "{focus}-js",
+  "{focus}-java",
+  "{focus}-go",
+  "{focus}-implementation",
 ]
 required_sections = [
-    "meta",
-    "repo",
-    "layer",
-    "depends",
-    "provides",
-    "contract",
-    "scope",
-    "citation",
-    "traceability",
-    "validation",
+  "meta",
+  "repo",
+  "layer",
+  "depends",
+  "provides",
+  "contract",
+  "scope",
+  "citation",
+  "traceability",
+  "validation",
 ]
-optional_sections = ["naming", "governance", "compatibility"]
-forbidden_sections = ["exports"]
-required_compatibility_fields = []
 
 [class.kernel]
-required_repo_name_patterns = ["se-kernel"]
-required_layer_roles = ["kernel"]
-required_sections = [
-    "meta",
-    "repo",
-    "layer",
-    "depends",
-    "provides",
-    "scope",
-    "compatibility",
-    "citation",
-    "traceability",
-]
-optional_sections = ["validation", "naming", "governance"]
 forbidden_sections = []
+optional_sections = ["validation", "naming", "governance"]
 required_compatibility_fields = ["constitution"]
+required_layer_roles = ["kernel"]
+required_repo_name_patterns = ["se-kernel"]
+required_sections = [
+  "meta",
+  "repo",
+  "layer",
+  "depends",
+  "provides",
+  "scope",
+  "compatibility",
+  "citation",
+  "traceability",
+]
 
 [class.manifest_schema]
-required_repo_name_patterns = ["se-manifest-schema"]
-required_layer_roles = ["manifest-schema"]
-required_sections = [
-    "meta",
-    "repo",
-    "layer",
-    "depends",
-    "provides",
-    "exports",
-    "scope",
-    "citation",
-    "traceability",
-]
-optional_sections = []
 forbidden_sections = []
+optional_sections = []
 required_compatibility_fields = []
+required_layer_roles = ["manifest-schema"]
+required_repo_name_patterns = ["se-manifest-schema"]
+required_sections = [
+  "meta",
+  "repo",
+  "layer",
+  "depends",
+  "provides",
+  "exports",
+  "scope",
+  "citation",
+  "traceability",
+]
 
 [class.mapping]
-required_repo_name_patterns = ["se-mapping-{standard}"]
-required_layer_roles = ["mapping"]
-required_sections = [
-    "meta",
-    "repo",
-    "layer",
-    "depends",
-    "provides",
-    "scope",
-    "compatibility",
-    "citation",
-    "traceability",
-]
-optional_sections = ["validation", "naming", "governance"]
 forbidden_sections = []
+optional_sections = ["validation", "naming", "governance"]
 required_compatibility_fields = ["constitution", "kernel", "mapspec"]
+required_layer_roles = ["mapping"]
+required_repo_name_patterns = ["se-mapping-{standard}"]
+required_sections = [
+  "meta",
+  "repo",
+  "layer",
+  "depends",
+  "provides",
+  "scope",
+  "compatibility",
+  "citation",
+  "traceability",
+]
 
 [class.mapspec]
-required_repo_name_patterns = ["se-mapspec"]
-required_layer_roles = ["mapping-specification"]
-required_sections = [
-    "meta",
-    "repo",
-    "layer",
-    "depends",
-    "provides",
-    "scope",
-    "compatibility",
-    "citation",
-    "traceability",
-]
-optional_sections = ["validation", "naming", "governance"]
 forbidden_sections = []
+optional_sections = ["validation", "naming", "governance"]
 required_compatibility_fields = ["constitution", "kernel"]
+required_layer_roles = ["mapping-specification"]
+required_repo_name_patterns = ["se-mapspec"]
+required_sections = [
+  "meta",
+  "repo",
+  "layer",
+  "depends",
+  "provides",
+  "scope",
+  "compatibility",
+  "citation",
+  "traceability",
+]
+
+[class.paper]
+# narrative justification/exposition companion to the formal work;
+# not a structural node - nothing in the graph consumes a paper
+forbidden_sections = ["contract", "exports"]
+optional_sections = ["validation", "naming", "governance", "compatibility"]
+required_compatibility_fields = []
+required_layer_roles = [
+  "justification",
+  "justification-neutrality",
+  "justification-identity",
+  "mechanism-characterization",
+  "exposition",
+]
+required_repo_name_patterns = ["paper-{focus}", "paper-{series}-{focus}"]
+required_sections = [
+  "meta",
+  "repo",
+  "layer",
+  "depends",
+  "provides",
+  "scope",
+  "citation",
+  "traceability",
+]
+
 
 [class.pilot]
 # experimental/conformance area; may be deliberately incomplete
-required_repo_name_patterns = ["se-pilot-{focus}"]
-required_layer_roles = ["pilot"]
-required_sections = [
-    "meta",
-    "repo",
-    "layer",
-    "depends",
-    "provides",
-    "scope",
-    "citation",
-    "traceability",
-]
-optional_sections = ["validation", "naming", "governance"]
 forbidden_sections = []
+optional_sections = ["validation", "naming", "governance"]
 required_compatibility_fields = []
+required_layer_roles = ["pilot"]
+required_repo_name_patterns = ["se-pilot-{focus}"]
+required_sections = [
+  "meta",
+  "repo",
+  "layer",
+  "depends",
+  "provides",
+  "scope",
+  "citation",
+  "traceability",
+]
 
 [class.policy]
-required_repo_name_patterns = ["se-policy"]
-required_layer_roles = ["policy"]
-required_sections = [
-    "meta",
-    "repo",
-    "layer",
-    "depends",
-    "provides",
-    "scope",
-    "compatibility",
-    "citation",
-    "traceability",
-]
-optional_sections = ["validation", "naming", "governance"]
 forbidden_sections = []
+optional_sections = ["validation", "naming", "governance"]
 required_compatibility_fields = ["constitution"]
+required_layer_roles = ["policy"]
+required_repo_name_patterns = ["se-policy"]
+required_sections = [
+  "meta",
+  "repo",
+  "layer",
+  "depends",
+  "provides",
+  "scope",
+  "compatibility",
+  "citation",
+  "traceability",
+]
 
 [class.profile]
-required_repo_name_patterns = [
-    "se-profile-{jurisdiction}",
-    "se-profile-{jurisdiction}-{focus}",
-]
-required_layer_roles = ["profile"]
-required_sections = [
-    "meta",
-    "repo",
-    "layer",
-    "depends",
-    "provides",
-    "scope",
-    "compatibility",
-    "citation",
-    "traceability",
-]
-optional_sections = ["validation", "naming", "governance"]
 forbidden_sections = []
+optional_sections = ["validation", "naming", "governance"]
 required_compatibility_fields = ["constitution", "kernel", "schema"]
+required_layer_roles = ["profile"]
+required_repo_name_patterns = [
+  "se-profile-{jurisdiction}",
+  "se-profile-{jurisdiction}-{focus}",
+]
+required_sections = [
+  "meta",
+  "repo",
+  "layer",
+  "depends",
+  "provides",
+  "scope",
+  "compatibility",
+  "citation",
+  "traceability",
+]
 
 [class.record_system]
-required_repo_name_patterns = [
-    "{focus}-record",
-    "{focus}-record-{domain}",
-    "judicial-record-{focus}",
-    "civic-institutional-record",
-    "hydrogen-energy-record",
-]
+forbidden_sections = ["exports"]
+optional_sections = ["compatibility"]
+required_compatibility_fields = []
 required_layer_roles = [
-    "record-system",
-    "domain-record-system",
-    "accountable-record-system",
+  "record-system",
+  "domain-record-system",
+  "accountable-record-system",
+]
+required_repo_name_patterns = [
+  "{focus}-record",
+  "{focus}-record-{domain}",
+  "judicial-record-{focus}",
+  "civic-institutional-record",
+  "hydrogen-energy-record",
 ]
 required_sections = [
-    "citation",
-    "contract",
-    "depends",
-    "governance",
-    "layer",
-    "meta",
-    "naming",
-    "provides",
-    "repo",
-    "scope",
-    "traceability",
-    "validation",
+  "citation",
+  "contract",
+  "depends",
+  "governance",
+  "layer",
+  "meta",
+  "naming",
+  "provides",
+  "repo",
+  "scope",
+  "traceability",
+  "validation",
 ]
-optional_sections = ["compatibility"]
-forbidden_sections = ["exports"]
-required_compatibility_fields = []
 
 [class.regimes]
-required_repo_name_patterns = ["se-regimes", "se-regimes-{focus}"]
-required_layer_roles = ["regime-execution"]
-required_sections = [
-    "meta",
-    "repo",
-    "layer",
-    "depends",
-    "provides",
-    "scope",
-    "compatibility",
-    "citation",
-    "traceability",
-]
-optional_sections = ["validation", "naming", "governance"]
 forbidden_sections = []
+optional_sections = ["validation", "naming", "governance"]
 required_compatibility_fields = ["constitution", "kernel"]
+required_layer_roles = ["regime-execution"]
+required_repo_name_patterns = ["se-regimes", "se-regimes-{focus}"]
+required_sections = [
+  "meta",
+  "repo",
+  "layer",
+  "depends",
+  "provides",
+  "scope",
+  "compatibility",
+  "citation",
+  "traceability",
+]
 
 [class.rules]
-required_repo_name_patterns = [
-    "se-rules-{jurisdiction}",
-    "se-rules-{jurisdiction}-{focus}",
-]
-required_layer_roles = ["rules"]
-required_sections = [
-    "meta",
-    "repo",
-    "layer",
-    "depends",
-    "provides",
-    "scope",
-    "compatibility",
-    "citation",
-    "traceability",
-]
-optional_sections = ["validation", "naming", "governance"]
 forbidden_sections = []
+optional_sections = ["validation", "naming", "governance"]
 required_compatibility_fields = ["constitution", "kernel", "schema"]
+required_layer_roles = ["rules"]
+required_repo_name_patterns = [
+  "se-rules-{jurisdiction}",
+  "se-rules-{jurisdiction}-{focus}",
+]
+required_sections = [
+  "meta",
+  "repo",
+  "layer",
+  "depends",
+  "provides",
+  "scope",
+  "compatibility",
+  "citation",
+  "traceability",
+]
 
 [class.schema]
-required_repo_name_patterns = ["se-schema-{focus}"]
-required_layer_roles = ["schema"]
-required_sections = [
-    "meta",
-    "repo",
-    "layer",
-    "depends",
-    "provides",
-    "scope",
-    "compatibility",
-    "citation",
-    "traceability",
-]
-optional_sections = ["validation", "naming", "governance"]
 forbidden_sections = []
+optional_sections = ["validation", "naming", "governance"]
 required_compatibility_fields = ["constitution", "kernel"]
+required_layer_roles = ["schema"]
+required_repo_name_patterns = ["se-schema-{focus}"]
+required_sections = [
+  "meta",
+  "repo",
+  "layer",
+  "depends",
+  "provides",
+  "scope",
+  "compatibility",
+  "citation",
+  "traceability",
+]
 
 [class.spec]
-required_repo_name_patterns = ["spec-{focus}"]
-required_layer_roles = ["specification"]
-required_sections = [
-    "meta",
-    "repo",
-    "layer",
-    "depends",
-    "provides",
-    "scope",
-    "citation",
-    "traceability",
-]
-optional_sections = ["validation", "naming", "governance", "compatibility"]
 forbidden_sections = ["contract", "exports"]
+optional_sections = ["validation", "naming", "governance", "compatibility"]
 required_compatibility_fields = []
+required_layer_roles = ["specification"]
+required_repo_name_patterns = ["spec-{focus}"]
+required_sections = [
+  "meta",
+  "repo",
+  "layer",
+  "depends",
+  "provides",
+  "scope",
+  "citation",
+  "traceability",
+]
 
 [class.theory]
 # upstream derivation layer; not constitution-compatible operationally
-required_repo_name_patterns = ["se-theory-{focus}"]
-required_layer_roles = ["theory"]
-required_sections = [
-    "meta",
-    "repo",
-    "layer",
-    "depends",
-    "provides",
-    "scope",
-    "citation",
-    "traceability",
+forbidden_sections = [
+  # WHY: Theories should not export machine-readable artifacts;
+  # they export formalized knowledge, not structured data.
+  "contract",
+  "exports",
 ]
 optional_sections = ["validation", "naming", "governance"]
-forbidden_sections = [
-    # WHY: Theories should not export machine-readable artifacts;
-    # they export formalized knowledge, not structured data.
-    "contract",
-    "exports",
-]
 required_compatibility_fields = []
+required_layer_roles = [
+  "theory",
+  "formal-derivation",
+  "foundational-theory",
+  "foundational-persistence-theory",
+  "foundational-transformation-theory",
+]
+required_repo_name_patterns = ["se-theory-{focus}"]
+required_sections = [
+  "meta",
+  "repo",
+  "layer",
+  "depends",
+  "provides",
+  "scope",
+  "citation",
+  "traceability",
+]
+
+[class.tool]
+# Utility/developer tooling repos.
+# Separate from:
+# - admin: ecosystem governance, orchestration, and repository administration
+# - engine: reusable semantic/runtime machinery consumed by other repos
+# - implementation: implementation of a contract, verifier, or record system
+#
+# Use this class for tools that inspect, migrate, audit, scaffold, normalize,
+# report on, or assist repositories without themselves defining ecosystem
+# administration policy, contract machinery, or domain implementation behavior.
+forbidden_sections = ["contract", "exports"]
+optional_sections = ["validation", "naming", "governance", "compatibility"]
+required_compatibility_fields = []
+required_layer_roles = [
+  "tooling",
+  "developer-tooling",
+  "repository-tooling",
+  "migration-tooling",
+  "audit-tooling",
+]
+required_repo_name_patterns = [
+  "se-tool",
+  "se-tool-{focus}",
+  "se-{focus}-tool",
+  "se-{focus}-tools",
+]
+required_sections = [
+  "meta",
+  "repo",
+  "layer",
+  "depends",
+  "provides",
+  "scope",
+  "citation",
+  "traceability",
+]
 
 [class.verification]
-required_repo_name_patterns = ["se-verification-{focus}-record"]
-required_layer_roles = ["verification"]
-required_sections = [
-    "citation",
-    "depends",
-    "governance",
-    "layer",
-    "meta",
-    "naming",
-    "provides",
-    "repo",
-    "scope",
-    "traceability",
-    "validation",
-]
-optional_sections = ["compatibility"]
 forbidden_sections = ["contract", "exports"]
+optional_sections = ["compatibility"]
 required_compatibility_fields = []
+required_layer_roles = ["verification"]
+required_repo_name_patterns = ["se-verification-{focus}-record"]
+required_sections = [
+  "citation",
+  "depends",
+  "governance",
+  "layer",
+  "meta",
+  "naming",
+  "provides",
+  "repo",
+  "scope",
+  "traceability",
+  "validation",
+]
 
 [class.verifier]
-required_repo_name_patterns = [
-    "se-verifier-{focus}",
-    "se-verifier-{focus}-record",
-    "{focus}-verifier",
-]
-required_layer_roles = ["verifier", "standalone-verifier", "domain-verifier"]
-required_sections = [
-    "meta",
-    "repo",
-    "layer",
-    "depends",
-    "provides",
-    "contract",
-    "scope",
-    "citation",
-    "traceability",
-    "validation",
-]
-optional_sections = ["naming", "governance", "compatibility"]
 forbidden_sections = ["exports"]
+optional_sections = ["naming", "governance", "compatibility"]
 required_compatibility_fields = []
+required_layer_roles = ["verifier", "standalone-verifier", "domain-verifier"]
+required_repo_name_patterns = [
+  "se-verifier-{focus}",
+  "se-verifier-{focus}-record",
+  "{focus}-verifier",
+]
+required_sections = [
+  "meta",
+  "repo",
+  "layer",
+  "depends",
+  "provides",
+  "contract",
+  "scope",
+  "citation",
+  "traceability",
+  "validation",
+]
 
 # ------------------------------------------------------------
 # Validation rules
 # ------------------------------------------------------------
 
 [validation]
-require_known_sections_only = true
-require_known_fields_only = true
-require_single_repo_class = true
-require_repo_name_to_match_declared_class = true
+allow_legacy_string_dependencies = true # TODO: set false before v1.0.0.
 require_declared_class_to_exist_in_class_registry = true
 require_dependencies_to_follow_dependency_law = true
+require_dependency_kind = true
+require_dependency_kind_to_be_known = true
+require_known_fields_only = true
+require_known_sections_only = true
 require_manifest_filename_allowed = true
+require_repo_name_to_match_declared_class = true
+require_single_repo_class = true
 
 [validation.defaults]
 empty_optional_lists_allowed = true
@@ -940,13 +1196,12 @@ empty_required_lists_allowed = true
 # ------------------------------------------------------------
 # Contract validation rules
 # ------------------------------------------------------------
-
 [validation.contract]
 
 # --- Presence: the contract section must be complete for the contract class ---
 # WHY: the role-based rules below are only enforceable if these fields exist.
-contract_role_required_for_contract_class = true
 contract_authority_required_for_contract_class = true
+contract_role_required_for_contract_class = true
 contract_version_required_for_contract_class = true
 
 # --- Role validity ---
@@ -971,7 +1226,7 @@ authority_role_must_not_consume_contract = true
 # it consumes for the resolver to resolve.
 domain_contract_role_must_consume_contract = true
 
-# WHY: a domain-contract must not consume itself — that would be a bootstrap loop
+# WHY: a domain-contract must not consume itself - that would be a bootstrap loop
 # (resolving its own vocabulary from itself).
 domain_contract_must_not_consume_self = true
 
@@ -979,7 +1234,7 @@ domain_contract_must_not_consume_self = true
 # (contract_authority_must_equal_self) and cannot consume itself
 # (domain_contract_must_not_consume_self). Together these entail that a domain
 # contract never consumes its own authority, so no consume-own-authority rule is
-# added — it would be a derived restatement that could drift from its premises.
+# added - it would be a derived restatement that could drift from its premises.
 
 # ------------------------------------------------------------
 # Notes
@@ -988,10 +1243,10 @@ domain_contract_must_not_consume_self = true
 [notes]
 manifest_role = "Declares repository intent, scope, role, and compatibility under constitutional law."
 non_goals = [
-    "build configuration",
-    "deployment configuration",
-    "runtime secrets",
-    "replace README documentation",
-    "replace CITATION.cff",
-    "duplicate constitutional law tables",
+  "build configuration",
+  "deployment configuration",
+  "runtime secrets",
+  "replace README documentation",
+  "replace CITATION.cff",
+  "duplicate constitutional law tables",
 ]

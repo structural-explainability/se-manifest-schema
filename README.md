@@ -62,7 +62,13 @@ uvx pre-commit run --all-files
 git add -A
 uvx pre-commit run --all-files
 
-# validate schema (this repo only)
+# validate the role capability map
+uv run se-manifest validate-role-capability-map
+
+# verify the manifest dependency graph
+uv run se-manifest verify-graph
+
+# validate schema
 uv run se-manifest validate-schema --strict
 
 # validate manifest (all repos)

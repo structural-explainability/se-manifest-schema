@@ -5,6 +5,10 @@ Command behavior lives in se_manifest_schema.commands.
 
 Commands:
 uv run se-manifest validate-schema
+uv run se-manifest validate-schema --strict
+
+uv run se-manifest validate-role-capability-map
+uv run se-manifest validate-role-capability-map --path data/schema/role-capability-map.toml
 
 uv run se-manifest validate-manifest
 uv run se-manifest validate-manifest --strict
@@ -20,7 +24,9 @@ from pathlib import Path
 from se_manifest_schema.commands import (
     check_version,
     validate_manifest,
+    validate_role_capability_map,
     validate_schema,
+    verify_graph,
 )
 
 __all__ = ["build_parser", "main"]
@@ -28,6 +34,8 @@ __all__ = ["build_parser", "main"]
 CommandFunc = Callable[[argparse.Namespace], int]
 
 EXIT_NO_COMMAND = 2
+
+DEFAULT_ROLE_CAPABILITY_MAP_PATH = Path("data/schema/role-capability-map.toml")
 
 
 def _run_check_version(args: argparse.Namespace) -> int:
@@ -44,16 +52,30 @@ def _run_validate_manifest(args: argparse.Namespace) -> int:
     )
 
 
+def _run_validate_role_capability_map(args: argparse.Namespace) -> int:
+    """Validate data/schema/role-capability-map.toml internal consistency."""
+    return validate_role_capability_map.run(path=args.path)
+
+
 def _run_validate_schema(args: argparse.Namespace) -> int:
     """Validate manifest-schema.toml internal consistency."""
     return validate_schema.run(strict=args.strict)
+
+
+def _run_verify_graph(args: argparse.Namespace) -> int:
+    """Verify the manifest dependency graph."""
+    return verify_graph.run(
+        root=args.root,
+        schema_path=args.schema_path,
+        report_path=args.report_path,
+    )
 
 
 def build_parser() -> argparse.ArgumentParser:
     """Build the argument parser."""
     parser = argparse.ArgumentParser(
         prog="se-manifest",
-        description="Validate SE repository manifests.",
+        description="Validate SE repository manifests and manifest-schema artifacts.",
     )
     subparsers = parser.add_subparsers(dest="command", required=False)
 
@@ -100,6 +122,23 @@ def build_parser() -> argparse.ArgumentParser:
     )
     validate_parser.set_defaults(func=_run_validate_manifest)
 
+    # === VALIDATE ROLE/CAPABILITY MAP COMMAND ===
+
+    role_capability_parser = subparsers.add_parser(
+        "validate-role-capability-map",
+        help="Validate data/schema/role-capability-map.toml internal consistency.",
+    )
+    role_capability_parser.add_argument(
+        "--path",
+        type=Path,
+        default=DEFAULT_ROLE_CAPABILITY_MAP_PATH,
+        help=(
+            "Path to role-capability-map.toml. "
+            f"Defaults to {DEFAULT_ROLE_CAPABILITY_MAP_PATH.as_posix()}."
+        ),
+    )
+    role_capability_parser.set_defaults(func=_run_validate_role_capability_map)
+
     # === VALIDATE SCHEMA COMMAND ===
 
     schema_parser = subparsers.add_parser(
@@ -112,6 +151,45 @@ def build_parser() -> argparse.ArgumentParser:
         help="Treat warnings as errors.",
     )
     schema_parser.set_defaults(func=_run_validate_schema)
+
+    # === VERIFY GRAPH COMMAND ===
+
+    # === VERIFY GRAPH COMMAND ===
+
+    graph_parser = subparsers.add_parser(
+        "verify-graph",
+        help="Verify the manifest dependency graph and generate a report.",
+    )
+    graph_parser.add_argument(
+        "--root",
+        type=Path,
+        default=None,
+        help=(
+            "Root directory to search for repository manifest files. "
+            "Defaults to the parent directory when run from se-manifest-schema; "
+            "otherwise defaults to the current directory."
+        ),
+    )
+    graph_parser.add_argument(
+        "--schema-path",
+        type=Path,
+        default=None,
+        help=(
+            "Path to manifest-schema.toml. "
+            "Defaults to manifest-schema.toml in the se-manifest-schema repo."
+        ),
+    )
+    graph_parser.add_argument(
+        "--report-path",
+        type=Path,
+        default=None,
+        help=(
+            "Path for the Markdown graph report. "
+            "Defaults to data/reports/org-graph-report.md in the "
+            "se-manifest-schema repo."
+        ),
+    )
+    graph_parser.set_defaults(func=_run_verify_graph)
 
     return parser
 

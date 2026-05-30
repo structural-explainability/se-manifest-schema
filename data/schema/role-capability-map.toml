@@ -1,0 +1,450 @@
+# ============================================================
+# role-capability-map.toml
+# ============================================================
+# Canonical role/capability map for Structural Explainability.
+#
+# Purpose:
+#   Binds manifest repo classes to role groups, role groups to verifier
+#   capability profiles, and role groups to graph-permission rules.
+#
+# Consumers:
+#   - se-manifest graph verifier:
+#       reads [role_groups] and [graph_permissions]
+#   - accountable-record verifier:
+#       reads [role_groups] and [capability_profiles]
+#   - future Rust verifier:
+#       reads the same contract artifact for conformance
+#
+# Principle:
+#   This file is a versioned contract artifact, not helper config.
+#   Consumers may ignore it, but divergence becomes detectable.
+# ============================================================
+
+
+# ------------------------------------------------------------
+# Schema identity
+# ------------------------------------------------------------
+
+[schema]
+schema_id = "se-role-capability-map-1"
+version = "0.1.0"
+status = "draft"
+title = "Structural Explainability Role Capability Map"
+description = "Maps manifest classes to role groups, capability profiles, and semantic graph permissions."
+
+
+# ------------------------------------------------------------
+# Export metadata
+# ------------------------------------------------------------
+
+[export]
+path = "data/schema/role-capability-map.toml"
+schema_path = "data/schema/role-capability-map.schema.toml"
+
+
+# ------------------------------------------------------------
+# Consumers
+# ------------------------------------------------------------
+
+[consumers]
+graph_verifier = "se-manifest verify-graph"
+stage_verifier = "accountable-record"
+future_rust_verifier = "accountable-record-rs"
+
+
+# ------------------------------------------------------------
+# Role groups
+# ------------------------------------------------------------
+# Keys are manifest repo classes from manifest-schema.toml.
+# Values are normalized role groups used by graph rules and capability profiles.
+#
+# Keep class names aligned with the class registry in manifest-schema.toml.
+# Keep role group names stable once graph rules depend on them.
+# ------------------------------------------------------------
+
+[role_groups]
+adapter = "adapter"
+admin = "administration"
+constitution = "constitution"
+contract = "contract"
+data_companion = "data"
+docs = "documentation"
+engine = "tooling"
+formal_contract = "formal_contract"
+govsrc = "govsrc"
+implementation = "implementation"
+kernel = "kernel"
+manifest_schema = "manifest_schema"
+mapping = "mapping"
+mapspec = "mapspec"
+pilot = "pilot"
+policy = "policy"
+profile = "profile"
+record_system = "record_system"
+regimes = "regimes"
+rules = "rules"
+schema = "schema"
+spec = "specification"
+theory = "theory"
+verification = "verification"
+verifier = "verifier"
+
+
+# ------------------------------------------------------------
+# Capability profiles
+# ------------------------------------------------------------
+# These are read by stage/verifier implementations.
+#
+# The names are intentionally capability-oriented rather than implementation-
+# oriented. The AR verifier can derive s040/s070 gates from these values without
+# redefining class/role semantics locally.
+# ------------------------------------------------------------
+
+[capability_profiles.adapter]
+validates_target_materials = false
+validates_resolution = false
+requires_lock_artifact = false
+exports_contract_artifacts = false
+emits_human_reports = false
+
+[capability_profiles.administration]
+validates_target_materials = false
+validates_resolution = false
+requires_lock_artifact = false
+exports_contract_artifacts = false
+emits_human_reports = true
+
+[capability_profiles.constitution]
+validates_target_materials = true
+validates_resolution = true
+requires_lock_artifact = true
+exports_contract_artifacts = false
+emits_human_reports = true
+
+[capability_profiles.contract]
+validates_target_materials = true
+validates_resolution = true
+requires_lock_artifact = true
+exports_contract_artifacts = true
+emits_human_reports = true
+
+[capability_profiles.data]
+validates_target_materials = true
+validates_resolution = true
+requires_lock_artifact = true
+exports_contract_artifacts = false
+emits_human_reports = true
+
+[capability_profiles.documentation]
+validates_target_materials = false
+validates_resolution = false
+requires_lock_artifact = false
+exports_contract_artifacts = false
+emits_human_reports = true
+
+[capability_profiles.tooling]
+validates_target_materials = false
+validates_resolution = false
+requires_lock_artifact = false
+exports_contract_artifacts = false
+emits_human_reports = true
+
+[capability_profiles.formal_contract]
+validates_target_materials = true
+validates_resolution = true
+requires_lock_artifact = true
+exports_contract_artifacts = true
+emits_human_reports = true
+
+[capability_profiles.govsrc]
+validates_target_materials = true
+validates_resolution = true
+requires_lock_artifact = true
+exports_contract_artifacts = false
+emits_human_reports = true
+
+[capability_profiles.implementation]
+validates_target_materials = true
+validates_resolution = true
+requires_lock_artifact = true
+exports_contract_artifacts = false
+emits_human_reports = true
+
+[capability_profiles.kernel]
+validates_target_materials = true
+validates_resolution = true
+requires_lock_artifact = true
+exports_contract_artifacts = true
+emits_human_reports = true
+
+[capability_profiles.manifest_schema]
+validates_target_materials = true
+validates_resolution = true
+requires_lock_artifact = true
+exports_contract_artifacts = true
+emits_human_reports = true
+
+[capability_profiles.mapping]
+validates_target_materials = true
+validates_resolution = true
+requires_lock_artifact = true
+exports_contract_artifacts = false
+emits_human_reports = true
+
+[capability_profiles.mapspec]
+validates_target_materials = true
+validates_resolution = true
+requires_lock_artifact = true
+exports_contract_artifacts = true
+emits_human_reports = true
+
+[capability_profiles.pilot]
+validates_target_materials = false
+validates_resolution = false
+requires_lock_artifact = false
+exports_contract_artifacts = false
+emits_human_reports = true
+
+[capability_profiles.policy]
+validates_target_materials = true
+validates_resolution = true
+requires_lock_artifact = true
+exports_contract_artifacts = false
+emits_human_reports = true
+
+[capability_profiles.profile]
+validates_target_materials = true
+validates_resolution = true
+requires_lock_artifact = true
+exports_contract_artifacts = false
+emits_human_reports = true
+
+[capability_profiles.record_system]
+validates_target_materials = true
+validates_resolution = true
+requires_lock_artifact = true
+exports_contract_artifacts = false
+emits_human_reports = true
+
+[capability_profiles.regimes]
+validates_target_materials = true
+validates_resolution = true
+requires_lock_artifact = true
+exports_contract_artifacts = false
+emits_human_reports = true
+
+[capability_profiles.rules]
+validates_target_materials = true
+validates_resolution = true
+requires_lock_artifact = true
+exports_contract_artifacts = false
+emits_human_reports = true
+
+[capability_profiles.schema]
+validates_target_materials = true
+validates_resolution = true
+requires_lock_artifact = true
+exports_contract_artifacts = true
+emits_human_reports = true
+
+[capability_profiles.specification]
+validates_target_materials = true
+validates_resolution = true
+requires_lock_artifact = true
+exports_contract_artifacts = false
+emits_human_reports = true
+
+[capability_profiles.theory]
+validates_target_materials = true
+validates_resolution = true
+requires_lock_artifact = true
+exports_contract_artifacts = false
+emits_human_reports = true
+
+[capability_profiles.verification]
+validates_target_materials = true
+validates_resolution = true
+requires_lock_artifact = true
+exports_contract_artifacts = false
+emits_human_reports = true
+
+[capability_profiles.verifier]
+validates_target_materials = true
+validates_resolution = true
+requires_lock_artifact = true
+exports_contract_artifacts = false
+emits_human_reports = true
+
+
+# ------------------------------------------------------------
+# Graph permissions
+# ------------------------------------------------------------
+# These are read by se-manifest verify-graph.
+#
+# Authority rules apply only to dependencies with kind = "semantic".
+# Tooling dependencies are real dependencies for installation and CI, but they
+# do not confer semantic authority.
+# ------------------------------------------------------------
+
+[graph_permissions]
+semantic_edge_kinds = ["semantic"]
+resolution_checked_edge_kinds = [
+    "semantic",
+    "tooling",
+    "documentation",
+    "test",
+    "release",
+    "provenance",
+]
+
+entry_point_role_groups = [
+    "administration",
+    "application",
+    "documentation",
+    "govsrc",
+    "paper",
+    "pilot",
+]
+
+
+# ------------------------------------------------------------
+# Graph invariant SG01: no domain semantics in the core
+# ------------------------------------------------------------
+
+[graph_permissions.no_core_depends_on_domain]
+source_role_groups = [
+    "constitution",
+    "kernel",
+    "manifest_schema",
+    "substrate",
+    "boundary",
+]
+forbidden_target_role_groups = [
+    "domain",
+    "application",
+    "example",
+    "govsrc",
+    "record_system",
+]
+diagnostic = "SE.ORG.CORE_DEPENDS_ON_DOMAIN"
+
+
+# ------------------------------------------------------------
+# Graph invariant SG02: interpretation stays external
+# ------------------------------------------------------------
+
+[graph_permissions.no_interpretation_leak]
+source_role_groups = [
+    "substrate",
+    "boundary",
+    "kernel",
+]
+forbidden_target_role_groups = [
+    "mapping",
+    "govsrc",
+]
+diagnostic = "SE.ORG.INTERPRETATION_LEAK"
+
+
+# ------------------------------------------------------------
+# Graph invariant SG03: implementations are not semantic authority
+# ------------------------------------------------------------
+
+[graph_permissions.no_contract_depends_on_implementation]
+source_role_groups = [
+    "contract",
+    "formal_contract",
+    "record_system",
+    "schema",
+]
+forbidden_target_role_groups = [
+    "implementation",
+    "verification",
+    "verifier",
+]
+diagnostic = "SE.ORG.CONTRACT_DEPENDS_ON_IMPL"
+
+
+# ------------------------------------------------------------
+# Graph invariant SG04: operational systems do not consume theory directly
+# ------------------------------------------------------------
+
+[graph_permissions.no_theory_bypass]
+source_role_groups = [
+    "application",
+    "implementation",
+    "record_system",
+    "verifier",
+]
+forbidden_target_role_groups = [
+    "theory",
+]
+allowed_intermediate_role_groups = [
+    "formal_contract",
+]
+diagnostic = "SE.ORG.THEORY_BYPASS"
+
+
+# ------------------------------------------------------------
+# Graph invariant SG05: layer monotonicity
+# ------------------------------------------------------------
+# Lower numbers are more foundational.
+# A semantic dependency edge should point from a higher or equal number to a
+# lower or equal number. Edges pointing toward larger numbers are inversions.
+# ------------------------------------------------------------
+
+[layer_order]
+manifest_schema = 0
+constitution = 1
+kernel = 2
+theory = 3
+formal_contract = 4
+contract = 5
+schema = 6
+mapspec = 6
+policy = 6
+rules = 7
+profile = 7
+mapping = 8
+regimes = 8
+adapter = 9
+data = 9
+tooling = 9
+implementation = 10
+verification = 10
+verifier = 10
+record_system = 11
+govsrc = 12
+documentation = 12
+administration = 13
+pilot = 13
+specification = 13
+
+[graph_permissions.layer_monotonicity]
+diagnostic = "SE.ORG.LAYER_INVERSION"
+uses_layer_order = true
+
+
+# ------------------------------------------------------------
+# Theory surface taxonomy
+# ------------------------------------------------------------
+# These buckets are semantic roles, not Lean syntax categories.
+# Each theory surface mirror must expose all buckets, even when empty.
+# ------------------------------------------------------------
+
+[surface_buckets]
+required = [
+    "types",
+    "predicates",
+    "axioms",
+    "theorems",
+    "witnesses",
+]
+
+constant_names = [
+    "SURFACE_TYPES",
+    "SURFACE_PREDICATES",
+    "SURFACE_AXIOMS",
+    "SURFACE_THEOREMS",
+    "SURFACE_WITNESSES",
+]

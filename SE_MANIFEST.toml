@@ -1,12 +1,11 @@
 # ============================================================
 # SE_MANIFEST.toml (Repository Declaration)
-# se-manifest-schema
 # ============================================================
 
 schema = "se-manifest-schema"
-schema_url = "https://raw.githubusercontent.com/structural-explainability/se-manifest-schema/blob/main/manifest-schema.toml"
+schema_url = "https://raw.githubusercontent.com/structural-explainability/se-manifest-schema/main/manifest-schema.toml"
 
-# === Identity ===
+# === Repository Identity ===
 
 [meta]
 purpose = "Declares the standalone manifest schema repository for the Structural Explainability ecosystem."
@@ -20,41 +19,53 @@ status = "active"
 since = "2026"
 summary = "Canonical manifest schema defining SE_MANIFEST.toml structure and validation rules."
 
+# === Layer Position ===
+
 [layer]
 space = "schema"
 role = "manifest-schema"
 
-# === Dependencies ===
+# === Dependency Declarations ===
 
 [depends]
 required = []
-optional = []
+optional = [
+    { repo = "se-contract-kit", kind = "tooling" },
+]
 
-# === Provided artifacts ===
+# === Provided Artifacts ===
 
 [provides]
 artifacts = [
-  "manifest-schema",
+    "manifest-schema.toml",
+    "data/schema/role-capability-map.toml",
+    "data/schema/role-capability-map.schema.toml",
+    "docs/en/design/manifest-graph-verification.md",
+    "docs/en/design/role-capability-map-review.md",
 ]
 
 [exports]
 manifest_schema = "manifest-schema.toml"
+role_capability_map = "data/schema/role-capability-map.toml"
+
+[validation]
+graph_entrypoint = "se-manifest verify-graph --strict"
 
 # === Scope ===
 
 [scope]
 includes = [
-  "definition of SE_MANIFEST.toml structure",
-  "definition of manifest sections and fields",
-  "definition of manifest class requirements",
+    "definition of SE_MANIFEST.toml structure",
+    "definition of manifest sections and fields",
+    "definition of manifest class requirements",
 ]
 
 excludes = [
-  "formal contract exports", # se-form-contract
-  "repository dependency law", # se-constitution
-  "operational validation logic", # se-admin / constitution
-  "Lean theorem definitions or proofs", # theory repos
-  "domain-specific data or mappings", # downstream repos
+    "formal contract exports",            # se-form-contract
+    "repository dependency law",          # se-constitution
+    "operational validation logic",       # se-admin / constitution
+    "Lean theorem definitions or proofs", # theory repos
+    "domain-specific data or mappings",   # downstream repos
 ]
 
 # === Citation ===
