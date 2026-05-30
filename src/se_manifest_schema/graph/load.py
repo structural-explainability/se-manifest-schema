@@ -1,7 +1,5 @@
 """Load repository manifests into a manifest graph."""
 
-from __future__ import annotations
-
 from collections.abc import Iterable, Sequence
 from pathlib import Path
 import tomllib

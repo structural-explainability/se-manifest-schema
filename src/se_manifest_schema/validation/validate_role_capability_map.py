@@ -1,7 +1,5 @@
 """validate_role_capability_map.py - Validate role-capability-map.toml."""
 
-from __future__ import annotations
-
 from collections.abc import Sequence
 from pathlib import Path
 import tomllib
