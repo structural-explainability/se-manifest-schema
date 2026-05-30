@@ -274,6 +274,7 @@ def test_contract_roles_registry_must_include_domain_contract() -> None:
 
 # ── additional branch coverage ─────────────────────────────────────────────────
 
+
 def test_allowed_manifest_filenames_with_empty_string_item_detected() -> None:
     schema = cast(
         ManifestSchemaData,

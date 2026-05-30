@@ -101,6 +101,10 @@ uv run python -m pytest
 uv run se-manifest validate-schema --strict
 uv run se-manifest validate-manifest --strict
 uv run python -m zensical build
+
+git add -A
+git commit -m "fix copilot generated test formatting"
+git push
 ```
 
 </details>

@@ -49,7 +49,7 @@ def test_render_with_path_outside_root_falls_back_to_full(tmp_path: Path) -> Non
         path=str(artifact),
     )
     result = d.render(root=other_root)
-    assert str(artifact) in result
+    assert artifact.as_posix() in result
 
 
 def test_render_with_root_as_string(tmp_path: Path) -> None:

@@ -3,10 +3,11 @@
 from pathlib import Path
 from typing import Any
 
-import pytest
-
-from se_manifest_schema.graph.diagnostics import GraphDiagnostic
-from se_manifest_schema.graph.model import DependencyEdge, GraphRepository, ManifestGraph
+from se_manifest_schema.graph.model import (
+    DependencyEdge,
+    GraphRepository,
+    ManifestGraph,
+)
 from se_manifest_schema.graph.validate import validate_si_invariants
 
 
@@ -26,7 +27,9 @@ def _make_repo(
         status="active",
         root=root / name,
         manifest_path=manifest_path,
-        manifest=manifest if manifest is not None else {"repo": {"name": name, "class": repo_class}},
+        manifest=manifest
+        if manifest is not None
+        else {"repo": {"name": name, "class": repo_class}},
         provided_artifacts=provided_artifacts,
     )
 
@@ -52,6 +55,7 @@ def _make_graph(
 
 
 # ── SI01: required semantic graph is acyclic ────────────────────────────────────
+
 
 def test_si01_no_cycles(tmp_path: Path) -> None:
     repos = {
@@ -129,6 +133,7 @@ def test_si01_non_semantic_required_edge_not_checked_for_cycle(tmp_path: Path) -
 
 # ── SI02: all declared dependencies resolve ─────────────────────────────────────
 
+
 def test_si02_all_resolve(tmp_path: Path) -> None:
     repos = {
         "a": _make_repo("a", tmp_path),
@@ -143,7 +148,11 @@ def test_si02_all_resolve(tmp_path: Path) -> None:
 
 def test_si02_unresolved_dependency_detected(tmp_path: Path) -> None:
     repos = {"a": _make_repo("a", tmp_path)}
-    edges = [DependencyEdge(source="a", target="missing-repo", required=True, kind="semantic")]
+    edges = [
+        DependencyEdge(
+            source="a", target="missing-repo", required=True, kind="semantic"
+        )
+    ]
     graph = _make_graph(repos, edges)
     diags = validate_si_invariants(graph)
     unresolved = [d for d in diags if d.code == "SE.ORG.UNRESOLVED_DEPENDENCY"]
@@ -153,7 +162,9 @@ def test_si02_unresolved_dependency_detected(tmp_path: Path) -> None:
 
 def test_si02_optional_unresolved_also_reported(tmp_path: Path) -> None:
     repos = {"a": _make_repo("a", tmp_path)}
-    edges = [DependencyEdge(source="a", target="ghost", required=False, kind="semantic")]
+    edges = [
+        DependencyEdge(source="a", target="ghost", required=False, kind="semantic")
+    ]
     graph = _make_graph(repos, edges)
     diags = validate_si_invariants(graph)
     unresolved = [d for d in diags if d.code == "SE.ORG.UNRESOLVED_DEPENDENCY"]
@@ -161,6 +172,7 @@ def test_si02_optional_unresolved_also_reported(tmp_path: Path) -> None:
 
 
 # ── SI03: provided artifacts exist ─────────────────────────────────────────────
+
 
 def test_si03_artifact_exists(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo-a"
@@ -215,6 +227,7 @@ def test_si03_no_artifacts_no_diagnostics(tmp_path: Path) -> None:
 
 # ── SI04: class registry requirements satisfied ─────────────────────────────────
 
+
 def test_si04_unknown_class_reported(tmp_path: Path) -> None:
     repo = _make_repo("repo-a", tmp_path, repo_class="unknown_class")
     repos = {"repo-a": repo}
@@ -248,7 +261,9 @@ def test_si04_missing_required_section_reported(tmp_path: Path) -> None:
         manifest={"repo": {"name": "repo-a", "class": "core"}},
     )
     repos = {"repo-a": repo}
-    schema: dict[str, Any] = {"class": {"core": {"required_sections": ["repo", "layer"]}}}
+    schema: dict[str, Any] = {
+        "class": {"core": {"required_sections": ["repo", "layer"]}}
+    }
     graph = _make_graph(repos, [], schema=schema)
     diags = validate_si_invariants(graph)
     missing = [d for d in diags if d.code == "SE.ORG.MISSING_REQUIRED_SECTION"]
@@ -267,6 +282,7 @@ def test_si04_invalid_required_sections_type_reported(tmp_path: Path) -> None:
 
 # ── combined: multiple invariants at once ──────────────────────────────────────
 
+
 def test_combined_multiple_diagnostics(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo-a"
     repo_root.mkdir()
@@ -277,7 +293,9 @@ def test_combined_multiple_diagnostics(tmp_path: Path) -> None:
         provided_artifacts=("missing.json",),
     )
     repos = {"repo-a": repo}
-    edges = [DependencyEdge(source="repo-a", target="ghost", required=True, kind="semantic")]
+    edges = [
+        DependencyEdge(source="repo-a", target="ghost", required=True, kind="semantic")
+    ]
     graph = _make_graph(repos, edges)
     diags = validate_si_invariants(graph)
     codes = {d.code for d in diags}

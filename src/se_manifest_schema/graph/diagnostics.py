@@ -34,13 +34,21 @@ class GraphDiagnostic:
             lines.append(f"    repo  {self.repo}")
 
         if self.path:
-            shown = self.path
-            if root is not None:
-                try:
-                    shown = str(Path(self.path).relative_to(root))
-                except ValueError:
-                    shown = self.path
+            shown = _render_path(self.path, root=root)
             lines.append(f"    path  {shown}")
 
         lines.append(f"    {self.message}")
         return "\n".join(lines)
+
+
+def _render_path(path: str, *, root: str | Path | None = None) -> str:
+    """Render a diagnostic path with stable separators."""
+    path_obj = Path(path)
+
+    if root is None:
+        return path_obj.as_posix()
+
+    try:
+        return path_obj.relative_to(Path(root)).as_posix()
+    except ValueError:
+        return path_obj.as_posix()

@@ -1,8 +1,8 @@
 """Tests for load.py - file loading and parsing."""
 
-import subprocess
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+import subprocess
+from unittest.mock import patch
 
 import pytest
 
@@ -67,6 +67,7 @@ def test_load_toml_valid(tmp_path: Path) -> None:
 
 # ── get_git_tag ────────────────────────────────────────────────────────────────
 
+
 def test_get_git_tag_success() -> None:
     mock_output = b"v1.2.3\n"
     with (
@@ -90,6 +91,7 @@ def test_get_git_tag_not_on_tagged_commit() -> None:
 
 
 # ── find_manifest_path ─────────────────────────────────────────────────────────
+
 
 def test_find_manifest_path_finds_canonical(tmp_path: Path) -> None:
     (tmp_path / CANONICAL_MANIFEST_FILE_NAME).write_text("[repo]\n", encoding="utf-8")
@@ -115,7 +117,9 @@ def test_find_manifest_path_raises_when_none(tmp_path: Path) -> None:
         find_manifest_path(tmp_path)
 
 
-def test_find_manifest_path_defaults_to_cwd(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_find_manifest_path_defaults_to_cwd(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     (tmp_path / CANONICAL_MANIFEST_FILE_NAME).write_text("[repo]\n", encoding="utf-8")
     monkeypatch.chdir(tmp_path)
     result = find_manifest_path()
@@ -124,7 +128,10 @@ def test_find_manifest_path_defaults_to_cwd(monkeypatch: pytest.MonkeyPatch, tmp
 
 # ── load_manifest ──────────────────────────────────────────────────────────────
 
-def test_load_manifest_finds_canonical_in_cwd(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+
+def test_load_manifest_finds_canonical_in_cwd(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     (tmp_path / CANONICAL_MANIFEST_FILE_NAME).write_text(
         '[repo]\nname = "x"\n', encoding="utf-8"
     )
@@ -134,6 +141,7 @@ def test_load_manifest_finds_canonical_in_cwd(monkeypatch: pytest.MonkeyPatch, t
 
 
 # ── packaged_schema_text ───────────────────────────────────────────────────────
+
 
 def test_packaged_schema_text_returns_nonempty_string() -> None:
     # packaged_schema_text() reads from the installed wheel artifact; in an editable
@@ -149,6 +157,7 @@ def test_packaged_schema_text_returns_nonempty_string() -> None:
 
 
 # ── repo_root_schema_path ──────────────────────────────────────────────────────
+
 
 def test_repo_root_schema_path_returns_none_in_tmp(tmp_path: Path) -> None:
     result = repo_root_schema_path(tmp_path)

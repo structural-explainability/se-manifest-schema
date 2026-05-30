@@ -403,6 +403,7 @@ def _domain_contract_manifest() -> dict[str, Any]:
 
 # ── additional branch coverage ─────────────────────────────────────────────────
 
+
 def test_missing_repo_class_string_detected() -> None:
     manifest = _minimal_manifest()
     manifest["repo"] = {"name": "se-test"}  # class missing entirely
@@ -485,4 +486,3 @@ def test_field_constraint_unknown_role_detected() -> None:
     manifest["contract"]["contract_role"] = "unknown-role"
     errors = validate_manifest(manifest, _contract_schema())
     assert any("allowed contract roles" in e for e in errors)
-

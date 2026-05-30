@@ -1,10 +1,6 @@
 """Tests for commands/verify_graph.py - graph verification command."""
 
 from pathlib import Path
-from typing import Any
-from unittest.mock import patch
-
-import pytest
 
 from se_manifest_schema.commands.verify_graph import (
     _find_schema_repo,
@@ -16,8 +12,8 @@ from se_manifest_schema.commands.verify_graph import (
     run,
 )
 
-
 # ── _looks_like_schema_repo ────────────────────────────────────────────────────
+
 
 def test_looks_like_schema_repo_true(tmp_path: Path) -> None:
     repo = tmp_path / "se-manifest-schema"
@@ -51,6 +47,7 @@ def test_looks_like_schema_repo_missing_manifest(tmp_path: Path) -> None:
 
 # ── _find_schema_repo ──────────────────────────────────────────────────────────
 
+
 def test_find_schema_repo_finds_ancestor(tmp_path: Path) -> None:
     schema_repo = tmp_path / "se-manifest-schema"
     schema_repo.mkdir()
@@ -81,6 +78,7 @@ def test_find_schema_repo_falls_back_to_working_dir(tmp_path: Path) -> None:
 
 # ── _resolve_path ──────────────────────────────────────────────────────────────
 
+
 def test_resolve_path_absolute(tmp_path: Path) -> None:
     absolute = tmp_path / "file.toml"
     absolute.touch()
@@ -91,7 +89,9 @@ def test_resolve_path_absolute(tmp_path: Path) -> None:
 def test_resolve_path_relative_to_working_dir(tmp_path: Path) -> None:
     file = tmp_path / "file.toml"
     file.touch()
-    result = _resolve_path(Path("file.toml"), working_dir=tmp_path, schema_repo=tmp_path)
+    result = _resolve_path(
+        Path("file.toml"), working_dir=tmp_path, schema_repo=tmp_path
+    )
     assert result == file.resolve()
 
 
@@ -124,6 +124,7 @@ def test_resolve_path_fallback_to_working_dir_candidate(tmp_path: Path) -> None:
 
 # ── _resolve_root ──────────────────────────────────────────────────────────────
 
+
 def test_resolve_root_explicit(tmp_path: Path) -> None:
     explicit = tmp_path / "custom-root"
     explicit.mkdir()
@@ -155,6 +156,7 @@ def test_resolve_root_defaults_to_working_dir(tmp_path: Path) -> None:
 
 # ── _resolve_schema_path ────────────────────────────────────────────────────────
 
+
 def test_resolve_schema_path_explicit(tmp_path: Path) -> None:
     explicit = tmp_path / "my-schema.toml"
     explicit.touch()
@@ -178,6 +180,7 @@ def test_resolve_schema_path_defaults_to_schema_repo(tmp_path: Path) -> None:
 
 # ── _resolve_report_path ────────────────────────────────────────────────────────
 
+
 def test_resolve_report_path_explicit(tmp_path: Path) -> None:
     explicit = tmp_path / "report.md"
     explicit.touch()
@@ -200,6 +203,7 @@ def test_resolve_report_path_defaults_to_schema_repo(tmp_path: Path) -> None:
 
 
 # ── run ────────────────────────────────────────────────────────────────────────
+
 
 def test_run_passes_with_no_manifests(tmp_path: Path) -> None:
     schema_path = tmp_path / "manifest-schema.toml"

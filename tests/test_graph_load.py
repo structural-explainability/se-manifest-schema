@@ -1,10 +1,6 @@
 """Tests for graph/load.py - manifest graph loading."""
 
 from pathlib import Path
-from typing import Any
-from unittest.mock import patch
-
-import pytest
 
 from se_manifest_schema.graph.load import (
     _contains_contiguous_parts,
@@ -14,10 +10,12 @@ from se_manifest_schema.graph.load import (
     _string_value,
     load_manifest_graph,
 )
-from se_manifest_schema.graph.model import DependencyEdge, GraphRepository
+from se_manifest_schema.graph.model import DependencyEdge
 
 
-def _write_manifest(directory: Path, content: str, filename: str = "SE_MANIFEST.toml") -> Path:
+def _write_manifest(
+    directory: Path, content: str, filename: str = "SE_MANIFEST.toml"
+) -> Path:
     path = directory / filename
     path.write_text(content, encoding="utf-8")
     return path
@@ -49,6 +47,7 @@ allowed_fields = ["name", "class", "version", "status"]
 
 # ── _string_value ──────────────────────────────────────────────────────────────
 
+
 def test_string_value_returns_string() -> None:
     assert _string_value({"key": "val"}, "key") == "val"
 
@@ -62,6 +61,7 @@ def test_string_value_returns_empty_for_non_string() -> None:
 
 
 # ── _contains_contiguous_parts ─────────────────────────────────────────────────
+
 
 def test_contiguous_parts_found() -> None:
     assert _contains_contiguous_parts(("a", "b", "c", "d"), ("b", "c")) is True
@@ -88,6 +88,7 @@ def test_contiguous_parts_excluded_longer_than_candidate() -> None:
 
 
 # ── _is_excluded_manifest_path ─────────────────────────────────────────────────
+
 
 def test_excluded_by_dir_name(tmp_path: Path) -> None:
     manifest = tmp_path / ".venv" / "SE_MANIFEST.toml"
@@ -127,6 +128,7 @@ def test_excluded_by_path_parts(tmp_path: Path) -> None:
 
 # ── _discover_manifest_paths ───────────────────────────────────────────────────
 
+
 def test_discover_finds_se_manifest(tmp_path: Path) -> None:
     sub = tmp_path / "repo"
     sub.mkdir()
@@ -160,6 +162,7 @@ def test_discover_empty_dir(tmp_path: Path) -> None:
 
 # ── _dependency_edges_from_items ───────────────────────────────────────────────
 
+
 def test_edges_from_string_items() -> None:
     edges = _dependency_edges_from_items(
         source="repo-a", items=["repo-b", "repo-c"], required=True
@@ -174,7 +177,9 @@ def test_edges_from_string_items() -> None:
 def test_edges_from_dict_items() -> None:
     edges = _dependency_edges_from_items(
         source="repo-a",
-        items=[{"repo": "repo-b", "kind": "artifact", "version": "1.0", "reason": "needs"}],
+        items=[
+            {"repo": "repo-b", "kind": "artifact", "version": "1.0", "reason": "needs"}
+        ],
         required=False,
     )
     assert len(edges) == 1
@@ -229,6 +234,7 @@ def test_edges_dict_item_with_non_string_kind_defaults_semantic() -> None:
 
 
 # ── load_manifest_graph ────────────────────────────────────────────────────────
+
 
 def test_load_manifest_graph_empty_root(tmp_path: Path) -> None:
     schema_path = tmp_path / "schema.toml"

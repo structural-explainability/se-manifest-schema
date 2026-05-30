@@ -8,8 +8,8 @@ from se_manifest_schema.validation.validate_role_capability_map import (
     validate_role_capability_map_file,
 )
 
-
 # ── helpers ────────────────────────────────────────────────────────────────────
+
 
 def _minimal_valid_data() -> dict[str, Any]:
     """Return a minimal valid role-capability-map data dict."""
@@ -99,27 +99,24 @@ def _minimal_valid_data() -> dict[str, Any]:
 
 # ── validate_role_capability_map_file ─────────────────────────────────────────
 
+
 def test_file_not_found_returns_error(tmp_path: Path) -> None:
     path = tmp_path / "missing.toml"
     errors = validate_role_capability_map_file(path)
     assert any("does not exist" in e for e in errors)
 
 
-def test_file_valid_returns_no_errors(tmp_path: Path) -> None:
-    import tomllib, io
-
-    # Write valid TOML from the data dict
-    data = _minimal_valid_data()
-    # Build a simple TOML string manually for only the top-level keys
-    # Use the actual project file instead
+def test_file_valid_returns_no_errors() -> None:
     project_root = Path(__file__).parent.parent
     real_path = project_root / "data" / "schema" / "role-capability-map.toml"
+
     if real_path.exists():
         errors = validate_role_capability_map_file(real_path)
         assert errors == [], "\n".join(errors)
 
 
 # ── validate_role_capability_map_data ─────────────────────────────────────────
+
 
 def test_valid_data_returns_no_errors() -> None:
     errors = validate_role_capability_map_data(_minimal_valid_data())
@@ -243,14 +240,18 @@ def test_forbidden_edge_rule_source_groups_detected() -> None:
 
 def test_forbidden_edge_rule_target_groups_detected() -> None:
     data = _minimal_valid_data()
-    data["graph_permissions"]["no_core_depends_on_domain"]["forbidden_target_role_groups"] = "bad"
+    data["graph_permissions"]["no_core_depends_on_domain"][
+        "forbidden_target_role_groups"
+    ] = "bad"
     errors = validate_role_capability_map_data(data)
     assert any("forbidden_target_role_groups" in e for e in errors)
 
 
 def test_theory_bypass_allowed_intermediates_detected() -> None:
     data = _minimal_valid_data()
-    data["graph_permissions"]["no_theory_bypass"]["allowed_intermediate_role_groups"] = "bad"
+    data["graph_permissions"]["no_theory_bypass"][
+        "allowed_intermediate_role_groups"
+    ] = "bad"
     errors = validate_role_capability_map_data(data)
     assert any("allowed_intermediate_role_groups" in e for e in errors)
 

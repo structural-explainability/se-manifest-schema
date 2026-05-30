@@ -1,7 +1,6 @@
 """Tests for commands/validate_role_capability_map.py."""
 
 from pathlib import Path
-from typing import Any
 from unittest.mock import patch
 
 from se_manifest_schema.commands.validate_role_capability_map import run

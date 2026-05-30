@@ -4,7 +4,11 @@ from pathlib import Path
 from typing import Any
 
 from se_manifest_schema.graph.diagnostics import GraphDiagnostic
-from se_manifest_schema.graph.model import DependencyEdge, GraphRepository, ManifestGraph
+from se_manifest_schema.graph.model import (
+    DependencyEdge,
+    GraphRepository,
+    ManifestGraph,
+)
 from se_manifest_schema.graph.report import render_markdown_report
 
 
@@ -64,7 +68,9 @@ def test_render_with_dependencies(tmp_path: Path) -> None:
         "repo-b": _make_repo("repo-b", tmp_path),
     }
     edges = [
-        DependencyEdge(source="repo-a", target="repo-b", required=True, kind="semantic"),
+        DependencyEdge(
+            source="repo-a", target="repo-b", required=True, kind="semantic"
+        ),
     ]
     graph = _make_graph(repos, edges)
     report = render_markdown_report(graph=graph, diagnostics=[])
@@ -81,7 +87,9 @@ def test_render_with_optional_dependency(tmp_path: Path) -> None:
         "repo-b": _make_repo("repo-b", tmp_path),
     }
     edges = [
-        DependencyEdge(source="repo-a", target="repo-b", required=False, kind="artifact"),
+        DependencyEdge(
+            source="repo-a", target="repo-b", required=False, kind="artifact"
+        ),
     ]
     graph = _make_graph(repos, edges)
     report = render_markdown_report(graph=graph, diagnostics=[])
