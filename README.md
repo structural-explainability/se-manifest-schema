@@ -68,12 +68,13 @@ uvx pre-commit run --all-files
 uv run se-manifest validate-role-capability-map
 
 # verify the manifest dependency graph
+# checks local repo manifests - not required to pass
 uv run se-manifest verify-graph
 
 # validate schema
 uv run se-manifest validate-schema --strict
 
-# validate manifest (all repos)
+# validate manifest
 uv run se-manifest validate-manifest --strict
 
 # types, tests, docs
@@ -111,14 +112,18 @@ git push
 
 </details>
 
+## Authority Manifest
+
+[.accountability/surfaces.toml](./.accountability/surfaces.toml)
+
 ## Citation
 
 [CITATION.cff](./CITATION.cff)
 
 ## License
 
-[LICENSE](./LICENSE)
+[MIT](./LICENSE)
 
-## Manifest
+## Repository Manifest
 
 [SE_MANIFEST.toml](./SE_MANIFEST.toml)

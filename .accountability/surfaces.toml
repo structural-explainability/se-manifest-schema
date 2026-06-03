@@ -1,20 +1,22 @@
 # ============================================================
 # .accountability/surfaces.toml (Authority-gated surfaces)
 # ============================================================
-# Updated: 2026-06-02 (Accountable Surfaces)
-#
-# REQ.ACCOUNTABILITY: This manifest MUST declare itself as a protected surface.
-# WHY: If an actor with technical capability can rewrite the authority
-# declaration, capability has silently become authority.
-#
-# NOTE: This file records authority-bearing repository surfaces, their roles,
-# review requirements, evidence requirements, and permitted AI authority.
 
-# === Manifest Identity ===
-
+schema = "accountable-surface-spec"
 schema_version = "0.1.0"
+schema_url = "https://raw.githubusercontent.com/structural-explainability/accountable-surface-spec/main/data/schema/accountability-surfaces.schema.json"
+
+# === Framework Context ===
+
+[meta]
+framework = "Structural Explainability"
+framework_url = "https://github.com/structural-explainability"
+purpose = "Declares authority-bearing repository surfaces, review requirements, evidence requirements, and permitted AI authority."
+
+# === Repository Identity ===
 
 [repository]
+organization = "structural-explainability"
 name = "se-manifest-schema"
 profile = "repository-protected-surface"
 description = "Canonical SE_MANIFEST.toml schema and validation repository."
