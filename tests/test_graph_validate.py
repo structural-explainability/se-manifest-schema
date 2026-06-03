@@ -29,7 +29,7 @@ def _make_repo(
         manifest_path=manifest_path,
         manifest=manifest
         if manifest is not None
-        else {"repo": {"name": name, "class": repo_class}},
+        else {"repository": {"name": name, "class": repo_class}},
         provided_artifacts=provided_artifacts,
     )
 
@@ -43,7 +43,7 @@ def _make_graph(
     if schema is None:
         schema = {
             "class": {
-                "core": {"required_sections": ["repo"]},
+                "core": {"required_sections": ["repository"]},
             }
         }
     return ManifestGraph(
@@ -52,9 +52,6 @@ def _make_graph(
         missing_manifest_roots=(),
         manifest_schema=schema,
     )
-
-
-# ── SI01: required semantic graph is acyclic ────────────────────────────────────
 
 
 def test_si01_no_cycles(tmp_path: Path) -> None:
@@ -131,9 +128,6 @@ def test_si01_non_semantic_required_edge_not_checked_for_cycle(tmp_path: Path) -
     assert cycle_diags == []
 
 
-# ── SI02: all declared dependencies resolve ─────────────────────────────────────
-
-
 def test_si02_all_resolve(tmp_path: Path) -> None:
     repos = {
         "a": _make_repo("a", tmp_path),
@@ -169,9 +163,6 @@ def test_si02_optional_unresolved_also_reported(tmp_path: Path) -> None:
     diags = validate_si_invariants(graph)
     unresolved = [d for d in diags if d.code == "SE.ORG.UNRESOLVED_DEPENDENCY"]
     assert len(unresolved) == 1
-
-
-# ── SI03: provided artifacts exist ─────────────────────────────────────────────
 
 
 def test_si03_artifact_exists(tmp_path: Path) -> None:
@@ -225,13 +216,10 @@ def test_si03_no_artifacts_no_diagnostics(tmp_path: Path) -> None:
     assert missing == []
 
 
-# ── SI04: class registry requirements satisfied ─────────────────────────────────
-
-
 def test_si04_unknown_class_reported(tmp_path: Path) -> None:
     repo = _make_repo("repo-a", tmp_path, repo_class="unknown_class")
     repos = {"repo-a": repo}
-    schema: dict[str, Any] = {"class": {"core": {"required_sections": ["repo"]}}}
+    schema: dict[str, Any] = {"class": {"core": {"required_sections": ["repository"]}}}
     graph = _make_graph(repos, [], schema=schema)
     diags = validate_si_invariants(graph)
     missing = [d for d in diags if d.code == "SE.ORG.MISSING_REQUIRED_SECTION"]
@@ -243,10 +231,10 @@ def test_si04_required_section_present(tmp_path: Path) -> None:
         "repo-a",
         tmp_path,
         repo_class="core",
-        manifest={"repo": {"name": "repo-a", "class": "core"}},
+        manifest={"repository": {"name": "repo-a", "class": "core"}},
     )
     repos = {"repo-a": repo}
-    schema: dict[str, Any] = {"class": {"core": {"required_sections": ["repo"]}}}
+    schema: dict[str, Any] = {"class": {"core": {"required_sections": ["repository"]}}}
     graph = _make_graph(repos, [], schema=schema)
     diags = validate_si_invariants(graph)
     missing = [d for d in diags if d.code == "SE.ORG.MISSING_REQUIRED_SECTION"]
@@ -258,11 +246,11 @@ def test_si04_missing_required_section_reported(tmp_path: Path) -> None:
         "repo-a",
         tmp_path,
         repo_class="core",
-        manifest={"repo": {"name": "repo-a", "class": "core"}},
+        manifest={"repository": {"name": "repo-a", "class": "core"}},
     )
     repos = {"repo-a": repo}
     schema: dict[str, Any] = {
-        "class": {"core": {"required_sections": ["repo", "layer"]}}
+        "class": {"core": {"required_sections": ["repository", "layer"]}}
     }
     graph = _make_graph(repos, [], schema=schema)
     diags = validate_si_invariants(graph)
@@ -278,9 +266,6 @@ def test_si04_invalid_required_sections_type_reported(tmp_path: Path) -> None:
     diags = validate_si_invariants(graph)
     missing = [d for d in diags if d.code == "SE.ORG.MISSING_REQUIRED_SECTION"]
     assert any("invalid required_sections" in d.message for d in missing)
-
-
-# ── combined: multiple invariants at once ──────────────────────────────────────
 
 
 def test_combined_multiple_diagnostics(tmp_path: Path) -> None:

@@ -12,14 +12,12 @@ from se_manifest_schema.commands.verify_graph import (
     run,
 )
 
-# ── _looks_like_schema_repo ────────────────────────────────────────────────────
-
 
 def test_looks_like_schema_repo_true(tmp_path: Path) -> None:
     repo = tmp_path / "se-manifest-schema"
     repo.mkdir()
     (repo / "manifest-schema.toml").write_text("[schema]\n", encoding="utf-8")
-    (repo / "SE_MANIFEST.toml").write_text("[repo]\n", encoding="utf-8")
+    (repo / "SE_MANIFEST.toml").write_text("[repository]\n", encoding="utf-8")
     assert _looks_like_schema_repo(repo) is True
 
 
@@ -27,14 +25,14 @@ def test_looks_like_schema_repo_wrong_name(tmp_path: Path) -> None:
     repo = tmp_path / "other-repo"
     repo.mkdir()
     (repo / "manifest-schema.toml").write_text("[schema]\n", encoding="utf-8")
-    (repo / "SE_MANIFEST.toml").write_text("[repo]\n", encoding="utf-8")
+    (repo / "SE_MANIFEST.toml").write_text("[repository]\n", encoding="utf-8")
     assert _looks_like_schema_repo(repo) is False
 
 
 def test_looks_like_schema_repo_missing_schema_file(tmp_path: Path) -> None:
     repo = tmp_path / "se-manifest-schema"
     repo.mkdir()
-    (repo / "SE_MANIFEST.toml").write_text("[repo]\n", encoding="utf-8")
+    (repo / "SE_MANIFEST.toml").write_text("[repository]\n", encoding="utf-8")
     assert _looks_like_schema_repo(repo) is False
 
 
@@ -45,14 +43,11 @@ def test_looks_like_schema_repo_missing_manifest(tmp_path: Path) -> None:
     assert _looks_like_schema_repo(repo) is False
 
 
-# ── _find_schema_repo ──────────────────────────────────────────────────────────
-
-
 def test_find_schema_repo_finds_ancestor(tmp_path: Path) -> None:
     schema_repo = tmp_path / "se-manifest-schema"
     schema_repo.mkdir()
     (schema_repo / "manifest-schema.toml").write_text("[schema]\n", encoding="utf-8")
-    (schema_repo / "SE_MANIFEST.toml").write_text("[repo]\n", encoding="utf-8")
+    (schema_repo / "SE_MANIFEST.toml").write_text("[repository]\n", encoding="utf-8")
 
     nested = schema_repo / "nested" / "subdir"
     nested.mkdir(parents=True)
@@ -65,7 +60,7 @@ def test_find_schema_repo_finds_child(tmp_path: Path) -> None:
     schema_repo = tmp_path / "se-manifest-schema"
     schema_repo.mkdir()
     (schema_repo / "manifest-schema.toml").write_text("[schema]\n", encoding="utf-8")
-    (schema_repo / "SE_MANIFEST.toml").write_text("[repo]\n", encoding="utf-8")
+    (schema_repo / "SE_MANIFEST.toml").write_text("[repository]\n", encoding="utf-8")
 
     result = _find_schema_repo(tmp_path)
     assert result == schema_repo.resolve()
@@ -74,9 +69,6 @@ def test_find_schema_repo_finds_child(tmp_path: Path) -> None:
 def test_find_schema_repo_falls_back_to_working_dir(tmp_path: Path) -> None:
     result = _find_schema_repo(tmp_path)
     assert result == tmp_path.resolve()
-
-
-# ── _resolve_path ──────────────────────────────────────────────────────────────
 
 
 def test_resolve_path_absolute(tmp_path: Path) -> None:
@@ -122,9 +114,6 @@ def test_resolve_path_fallback_to_working_dir_candidate(tmp_path: Path) -> None:
     assert result == (tmp_path / "missing.toml").resolve()
 
 
-# ── _resolve_root ──────────────────────────────────────────────────────────────
-
-
 def test_resolve_root_explicit(tmp_path: Path) -> None:
     explicit = tmp_path / "custom-root"
     explicit.mkdir()
@@ -154,9 +143,6 @@ def test_resolve_root_defaults_to_working_dir(tmp_path: Path) -> None:
     assert result == working_dir.resolve()
 
 
-# ── _resolve_schema_path ────────────────────────────────────────────────────────
-
-
 def test_resolve_schema_path_explicit(tmp_path: Path) -> None:
     explicit = tmp_path / "my-schema.toml"
     explicit.touch()
@@ -176,9 +162,6 @@ def test_resolve_schema_path_defaults_to_schema_repo(tmp_path: Path) -> None:
         schema_path=None, working_dir=tmp_path, schema_repo=schema_repo
     )
     assert result == (schema_repo / "manifest-schema.toml").resolve()
-
-
-# ── _resolve_report_path ────────────────────────────────────────────────────────
 
 
 def test_resolve_report_path_explicit(tmp_path: Path) -> None:
@@ -202,9 +185,6 @@ def test_resolve_report_path_defaults_to_schema_repo(tmp_path: Path) -> None:
     assert "org-graph-report.md" in str(result)
 
 
-# ── run ────────────────────────────────────────────────────────────────────────
-
-
 def test_run_passes_with_no_manifests(tmp_path: Path) -> None:
     schema_path = tmp_path / "manifest-schema.toml"
     schema_path.write_text("[class]\n", encoding="utf-8")
@@ -221,7 +201,7 @@ def test_run_fails_when_diagnostics(tmp_path: Path) -> None:
     manifest = repo_dir / "SE_MANIFEST.toml"
     manifest.write_text(
         """
-[repo]
+[repository]
 name = "repo-a"
 class = "core"
 version = "0.1.0"

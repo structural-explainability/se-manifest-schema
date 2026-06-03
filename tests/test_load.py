@@ -30,17 +30,17 @@ def test_get_git_tag_not_found() -> None:
 
 
 def test_get_repo_version_missing_repo() -> None:
-    with pytest.raises(ValueError, match="repo"):
+    with pytest.raises(ValueError, match="repository"):
         get_repo_version({})
 
 
 def test_get_repo_version_missing_version() -> None:
     with pytest.raises(ValueError, match="version"):
-        get_repo_version({"repo": {"name": "x"}})
+        get_repo_version({"repository": {"name": "x"}})
 
 
 def test_get_repo_version_valid() -> None:
-    manifest = {"repo": {"version": "0.2.0", "name": "x"}}
+    manifest = {"repository": {"version": "0.2.0", "name": "x"}}
     assert get_repo_version(manifest) == "0.2.0"
 
 
@@ -65,9 +65,6 @@ def test_load_toml_valid(tmp_path: Path) -> None:
     assert data["meta"]["version"] == "1.0.0"
 
 
-# ── get_git_tag ────────────────────────────────────────────────────────────────
-
-
 def test_get_git_tag_success() -> None:
     mock_output = b"v1.2.3\n"
     with (
@@ -90,24 +87,29 @@ def test_get_git_tag_not_on_tagged_commit() -> None:
         get_git_tag()
 
 
-# ── find_manifest_path ─────────────────────────────────────────────────────────
-
-
 def test_find_manifest_path_finds_canonical(tmp_path: Path) -> None:
-    (tmp_path / CANONICAL_MANIFEST_FILE_NAME).write_text("[repo]\n", encoding="utf-8")
+    (tmp_path / CANONICAL_MANIFEST_FILE_NAME).write_text(
+        "[repository]\n", encoding="utf-8"
+    )
     result = find_manifest_path(tmp_path)
     assert result.name == CANONICAL_MANIFEST_FILE_NAME
 
 
 def test_find_manifest_path_finds_alternate(tmp_path: Path) -> None:
-    (tmp_path / ALTERNATE_MANIFEST_FILE_NAME).write_text("[repo]\n", encoding="utf-8")
+    (tmp_path / ALTERNATE_MANIFEST_FILE_NAME).write_text(
+        "[repository]\n", encoding="utf-8"
+    )
     result = find_manifest_path(tmp_path)
     assert result.name == ALTERNATE_MANIFEST_FILE_NAME
 
 
 def test_find_manifest_path_prefers_canonical(tmp_path: Path) -> None:
-    (tmp_path / CANONICAL_MANIFEST_FILE_NAME).write_text("[repo]\n", encoding="utf-8")
-    (tmp_path / ALTERNATE_MANIFEST_FILE_NAME).write_text("[repo]\n", encoding="utf-8")
+    (tmp_path / CANONICAL_MANIFEST_FILE_NAME).write_text(
+        "[repository]\n", encoding="utf-8"
+    )
+    (tmp_path / ALTERNATE_MANIFEST_FILE_NAME).write_text(
+        "[repository]\n", encoding="utf-8"
+    )
     result = find_manifest_path(tmp_path)
     assert result.name == CANONICAL_MANIFEST_FILE_NAME
 
@@ -120,27 +122,23 @@ def test_find_manifest_path_raises_when_none(tmp_path: Path) -> None:
 def test_find_manifest_path_defaults_to_cwd(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    (tmp_path / CANONICAL_MANIFEST_FILE_NAME).write_text("[repo]\n", encoding="utf-8")
+    (tmp_path / CANONICAL_MANIFEST_FILE_NAME).write_text(
+        "[repository]\n", encoding="utf-8"
+    )
     monkeypatch.chdir(tmp_path)
     result = find_manifest_path()
     assert result.name == CANONICAL_MANIFEST_FILE_NAME
-
-
-# ── load_manifest ──────────────────────────────────────────────────────────────
 
 
 def test_load_manifest_finds_canonical_in_cwd(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     (tmp_path / CANONICAL_MANIFEST_FILE_NAME).write_text(
-        '[repo]\nname = "x"\n', encoding="utf-8"
+        '[repository]\nname = "x"\n', encoding="utf-8"
     )
     monkeypatch.chdir(tmp_path)
     data = load_manifest()
-    assert data["repo"]["name"] == "x"
-
-
-# ── packaged_schema_text ───────────────────────────────────────────────────────
+    assert data["repository"]["name"] == "x"
 
 
 def test_packaged_schema_text_returns_nonempty_string() -> None:
@@ -154,9 +152,6 @@ def test_packaged_schema_text_returns_nonempty_string() -> None:
         pytest.skip("manifest-schema.toml not bundled in editable install")
     assert isinstance(text, str)
     assert len(text) > 0
-
-
-# ── repo_root_schema_path ──────────────────────────────────────────────────────
 
 
 def test_repo_root_schema_path_returns_none_in_tmp(tmp_path: Path) -> None:

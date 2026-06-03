@@ -176,7 +176,7 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help=(
             "Path to manifest-schema.toml. "
-            "Defaults to manifest-schema.toml in the se-manifest-schema repo."
+            "Defaults to manifest-schema.toml in the se-manifest-schema repository."
         ),
     )
     graph_parser.add_argument(
@@ -186,7 +186,7 @@ def build_parser() -> argparse.ArgumentParser:
         help=(
             "Path for the Markdown graph report. "
             "Defaults to data/reports/org-graph-report.md in the "
-            "se-manifest-schema repo."
+            "se-manifest-schema repository."
         ),
     )
     graph_parser.set_defaults(func=_run_verify_graph)

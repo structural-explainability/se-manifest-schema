@@ -4,6 +4,23 @@ from typing import Any, cast
 
 from se_manifest_schema.types.manifest_schema import ManifestSchemaData
 
+CLASS_LIST_KEYS = (
+    "required_repo_name_patterns",
+    "required_layer_roles",
+    "required_sections",
+    "optional_sections",
+    "forbidden_sections",
+    "required_compatibility_fields",
+)
+
+REQUIRED_CLASS_VALIDATION_RULES = (
+    "require_class_required_sections_present",
+    "require_sections_to_be_required_or_optional_for_class",
+    "require_class_forbidden_sections_absent",
+    "require_layer_role_to_match_declared_class",
+    "require_compatibility_fields_for_class",
+)
+
 REQUIRED_CONTRACT_ROLES = {"authority", "domain-contract"}
 REQUIRED_MANIFEST_FILENAMES = ("SE_MANIFEST.toml", "MANIFEST.toml")
 
@@ -28,7 +45,24 @@ def validate_schema_internal(schema: ManifestSchemaData) -> list[str]:
     contract_roles = cast(dict[str, Any], schema.get("contract_roles", {}))
     custom_types = _load_custom_types(schema)
 
+    _validate_class_validation_rules(
+        validation=validation,
+        errors=errors,
+    )
+    _validate_class_registry_shape(
+        classes=classes,
+        errors=errors,
+    )
     _validate_class_sections(
+        classes=classes,
+        sections=sections,
+        errors=errors,
+    )
+    _validate_class_section_set_consistency(
+        classes=classes,
+        errors=errors,
+    )
+    _validate_class_compatibility_fields(
         classes=classes,
         sections=sections,
         errors=errors,
@@ -122,6 +156,67 @@ def iter_field_definitions(
     return results
 
 
+def _string_set(value: object) -> set[str]:
+    """Return nonempty string values from a list-like schema value."""
+    if not isinstance(value, list):
+        return set()
+
+    return {item for item in cast(list[Any], value) if isinstance(item, str) and item}
+
+
+def _validate_class_validation_rules(
+    *,
+    validation: dict[str, Any],
+    errors: list[str],
+) -> None:
+    """Validate that class registry enforcement rules are enabled."""
+    for rule_name in REQUIRED_CLASS_VALIDATION_RULES:
+        if validation.get(rule_name) is not True:
+            errors.append(f"validation.{rule_name}: must be true")
+
+
+def _validate_class_registry_shape(
+    *,
+    classes: dict[str, Any],
+    errors: list[str],
+) -> None:
+    """Validate that every class declares the required registry fields."""
+    for class_name, class_def in classes.items():
+        if not isinstance(class_def, dict):
+            errors.append(f"class.{class_name}: must be a table")
+            continue
+
+        class_def_typed = cast(dict[str, Any], class_def)
+
+        for list_key in CLASS_LIST_KEYS:
+            value = class_def_typed.get(list_key)
+
+            if not isinstance(value, list):
+                errors.append(f"class.{class_name}.{list_key}: must be a list")
+                continue
+
+            invalid_items = [
+                item
+                for item in cast(list[Any], value)
+                if not isinstance(item, str) or not item
+            ]
+            if invalid_items:
+                errors.append(
+                    f"class.{class_name}.{list_key}: all values must be nonempty strings"
+                )
+
+        for required_nonempty_key in (
+            "required_repo_name_patterns",
+            "required_layer_roles",
+            "required_sections",
+        ):
+            value = class_def_typed.get(required_nonempty_key)
+            if isinstance(value, list) and not value:
+                errors.append(
+                    f"class.{class_name}.{required_nonempty_key}: must not be empty"
+                )
+
+
 def _validate_class_sections(
     *,
     classes: dict[str, Any],
@@ -144,6 +239,73 @@ def _validate_class_sections(
                     errors.append(
                         f"class.{class_name}.{list_key}: unknown section '{section}'"
                     )
+
+
+def _validate_class_section_set_consistency(
+    *,
+    classes: dict[str, Any],
+    errors: list[str],
+) -> None:
+    """Validate class required, optional, and forbidden section sets."""
+    for class_name, class_def in classes.items():
+        if not isinstance(class_def, dict):
+            continue
+
+        class_def_typed = cast(dict[str, Any], class_def)
+
+        required_sections = _string_set(class_def_typed.get("required_sections", []))
+        optional_sections = _string_set(class_def_typed.get("optional_sections", []))
+        forbidden_sections = _string_set(class_def_typed.get("forbidden_sections", []))
+
+        required_and_optional = required_sections & optional_sections
+        required_and_forbidden = required_sections & forbidden_sections
+        optional_and_forbidden = optional_sections & forbidden_sections
+
+        for section in sorted(required_and_optional):
+            errors.append(
+                f"class.{class_name}: section '{section}' cannot be both required and optional"
+            )
+
+        for section in sorted(required_and_forbidden):
+            errors.append(
+                f"class.{class_name}: section '{section}' cannot be both required and forbidden"
+            )
+
+        for section in sorted(optional_and_forbidden):
+            errors.append(
+                f"class.{class_name}: section '{section}' cannot be both optional and forbidden"
+            )
+
+
+def _validate_class_compatibility_fields(
+    *,
+    classes: dict[str, Any],
+    sections: dict[str, Any],
+    errors: list[str],
+) -> None:
+    """Validate class required compatibility fields against the section registry."""
+    compatibility_section = sections.get("compatibility", {})
+    if not isinstance(compatibility_section, dict):
+        return
+
+    compatibility_section_typed = cast(dict[str, Any], compatibility_section)
+    allowed_raw = compatibility_section_typed.get("allowed_fields", [])
+    allowed_fields = _string_set(allowed_raw)
+
+    for class_name, class_def in classes.items():
+        if not isinstance(class_def, dict):
+            continue
+
+        class_def_typed = cast(dict[str, Any], class_def)
+        required_fields = _string_set(
+            class_def_typed.get("required_compatibility_fields", [])
+        )
+
+        for field_name in sorted(required_fields - allowed_fields):
+            errors.append(
+                f"class.{class_name}.required_compatibility_fields: "
+                f"unknown compatibility field '{field_name}'"
+            )
 
 
 def _validate_section_allowed_fields(

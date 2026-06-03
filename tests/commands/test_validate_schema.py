@@ -14,10 +14,10 @@ def test_validate_schema_invalid_schema_returns_1(tmp_path: Path) -> None:
     schema_path = tmp_path / "manifest-schema.toml"
     schema_path.write_text(
         """
-[section.repo]
+[section.repository]
 allowed_fields = ["name"]
 
-[field.repo]
+[field.repository]
 name = {type = "not-a-valid-type", required = true}
 
 [class]

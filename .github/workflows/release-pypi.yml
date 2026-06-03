@@ -39,7 +39,7 @@ jobs:
     timeout-minutes: 30 # WHY: Prevent hanging jobs. If over, it is likely stuck.
     environment: pypi  # WHY: Use 'pypi' environment for PyPI publishing; ignore warnings.
     env:
-      UV_PYTHON: "3.14" # WHY: Set Python version for all steps.
+      PYTHON_VERSION: "3.14"
 
     steps:
 
@@ -61,8 +61,8 @@ jobs:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
 
-      - name: A4) Install Python ${{ env.UV_PYTHON }}
-        run: uv python install ${{ env.UV_PYTHON }}
+      - name: A4) Install Python ${{ env.PYTHON_VERSION }}
+        run: uv python install ${{ env.PYTHON_VERSION }}
 
       - name: A5) Display versions
         run: |

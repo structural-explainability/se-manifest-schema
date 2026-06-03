@@ -66,17 +66,17 @@ def get_git_tag() -> str:
 
 
 def get_repo_version(manifest: dict[str, Any]) -> str:
-    """Extract the repo version from the manifest."""
-    repo: Any = manifest.get("repo")
+    """Extract the repository version from the manifest."""
+    repo: Any = manifest.get("repository")
 
     if not isinstance(repo, dict):
-        raise ValueError("Manifest missing 'repo' section")
+        raise ValueError("Manifest missing 'repository' section")
 
     repo_typed: dict[str, Any] = repo  # type: ignore[assignment]
     version: Any = repo_typed.get("version")
 
     if not isinstance(version, str):
-        raise ValueError("Manifest 'repo' section missing 'version' string")
+        raise ValueError("Manifest 'repository' section missing 'version' string")
 
     return version
 

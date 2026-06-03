@@ -23,7 +23,7 @@ def _write_manifest(
 
 def _minimal_manifest_content(name: str = "repo-a", repo_class: str = "core") -> str:
     return f"""
-[repo]
+[repository]
 name = "{name}"
 class = "{repo_class}"
 version = "0.1.0"
@@ -38,14 +38,11 @@ role = "kernel"
 def _schema_content() -> str:
     return """
 [class.core]
-required_sections = ["repo"]
+required_sections = ["repository"]
 
-[section.repo]
+[section.repository]
 allowed_fields = ["name", "class", "version", "status"]
 """
-
-
-# ── _string_value ──────────────────────────────────────────────────────────────
 
 
 def test_string_value_returns_string() -> None:
@@ -58,9 +55,6 @@ def test_string_value_returns_empty_for_missing() -> None:
 
 def test_string_value_returns_empty_for_non_string() -> None:
     assert _string_value({"key": 42}, "key") == ""
-
-
-# ── _contains_contiguous_parts ─────────────────────────────────────────────────
 
 
 def test_contiguous_parts_found() -> None:
@@ -87,9 +81,6 @@ def test_contiguous_parts_excluded_longer_than_candidate() -> None:
     assert _contains_contiguous_parts(("a",), ("a", "b")) is False
 
 
-# ── _is_excluded_manifest_path ─────────────────────────────────────────────────
-
-
 def test_excluded_by_dir_name(tmp_path: Path) -> None:
     manifest = tmp_path / ".venv" / "SE_MANIFEST.toml"
     manifest.parent.mkdir()
@@ -103,7 +94,7 @@ def test_excluded_by_dir_name(tmp_path: Path) -> None:
 
 
 def test_not_excluded_when_no_rules(tmp_path: Path) -> None:
-    manifest = tmp_path / "repo" / "SE_MANIFEST.toml"
+    manifest = tmp_path / "repository" / "SE_MANIFEST.toml"
     manifest.parent.mkdir()
     manifest.touch()
     assert not _is_excluded_manifest_path(
@@ -126,22 +117,19 @@ def test_excluded_by_path_parts(tmp_path: Path) -> None:
     )
 
 
-# ── _discover_manifest_paths ───────────────────────────────────────────────────
-
-
 def test_discover_finds_se_manifest(tmp_path: Path) -> None:
-    sub = tmp_path / "repo"
+    sub = tmp_path / "repository"
     sub.mkdir()
-    (sub / "SE_MANIFEST.toml").write_text("[repo]\nname='x'\n", encoding="utf-8")
+    (sub / "SE_MANIFEST.toml").write_text("[repository]\nname='x'\n", encoding="utf-8")
     paths = _discover_manifest_paths(tmp_path)
     assert any(p.name == "SE_MANIFEST.toml" for p in paths)
 
 
 def test_discover_prefers_se_manifest_over_manifest(tmp_path: Path) -> None:
-    sub = tmp_path / "repo"
+    sub = tmp_path / "repository"
     sub.mkdir()
-    (sub / "SE_MANIFEST.toml").write_text("[repo]\nname='a'\n", encoding="utf-8")
-    (sub / "MANIFEST.toml").write_text("[repo]\nname='b'\n", encoding="utf-8")
+    (sub / "SE_MANIFEST.toml").write_text("[repository]\nname='a'\n", encoding="utf-8")
+    (sub / "MANIFEST.toml").write_text("[repository]\nname='b'\n", encoding="utf-8")
     paths = _discover_manifest_paths(tmp_path)
     names = [p.name for p in paths]
     assert "SE_MANIFEST.toml" in names
@@ -149,18 +137,15 @@ def test_discover_prefers_se_manifest_over_manifest(tmp_path: Path) -> None:
 
 
 def test_discover_finds_manifest_toml_fallback(tmp_path: Path) -> None:
-    sub = tmp_path / "repo"
+    sub = tmp_path / "repository"
     sub.mkdir()
-    (sub / "MANIFEST.toml").write_text("[repo]\nname='b'\n", encoding="utf-8")
+    (sub / "MANIFEST.toml").write_text("[repository]\nname='b'\n", encoding="utf-8")
     paths = _discover_manifest_paths(tmp_path)
     assert any(p.name == "MANIFEST.toml" for p in paths)
 
 
 def test_discover_empty_dir(tmp_path: Path) -> None:
     assert _discover_manifest_paths(tmp_path) == []
-
-
-# ── _dependency_edges_from_items ───────────────────────────────────────────────
 
 
 def test_edges_from_string_items() -> None:
@@ -178,7 +163,12 @@ def test_edges_from_dict_items() -> None:
     edges = _dependency_edges_from_items(
         source="repo-a",
         items=[
-            {"repo": "repo-b", "kind": "artifact", "version": "1.0", "reason": "needs"}
+            {
+                "repository": "repo-b",
+                "kind": "artifact",
+                "version": "1.0",
+                "reason": "needs",
+            }
         ],
         required=False,
     )
@@ -218,7 +208,7 @@ def test_edges_from_non_list_returns_empty() -> None:
 def test_edges_dict_item_defaults_kind_to_semantic() -> None:
     edges = _dependency_edges_from_items(
         source="a",
-        items=[{"repo": "b"}],
+        items=[{"repository": "b"}],
         required=True,
     )
     assert edges[0].kind == "semantic"
@@ -227,13 +217,10 @@ def test_edges_dict_item_defaults_kind_to_semantic() -> None:
 def test_edges_dict_item_with_non_string_kind_defaults_semantic() -> None:
     edges = _dependency_edges_from_items(
         source="a",
-        items=[{"repo": "b", "kind": 99}],
+        items=[{"repository": "b", "kind": 99}],
         required=True,
     )
     assert edges[0].kind == "semantic"
-
-
-# ── load_manifest_graph ────────────────────────────────────────────────────────
 
 
 def test_load_manifest_graph_empty_root(tmp_path: Path) -> None:
@@ -258,7 +245,7 @@ def test_load_manifest_graph_single_repo(tmp_path: Path) -> None:
 
 def test_load_manifest_graph_with_dependencies(tmp_path: Path) -> None:
     content = """
-[repo]
+[repository]
 name = "repo-a"
 class = "core"
 version = "0.1.0"
@@ -269,7 +256,7 @@ space = "theory"
 role = "kernel"
 
 [depends]
-required = [{repo = "repo-b", kind = "semantic"}]
+required = [{repository = "repo-b", kind = "semantic"}]
 optional = ["repo-c"]
 """
     repo_dir = tmp_path / "repo-a"
@@ -320,7 +307,7 @@ def test_load_manifest_graph_excludes_path_parts(tmp_path: Path) -> None:
 
 def test_load_manifest_graph_captures_provided_artifacts(tmp_path: Path) -> None:
     content = """
-[repo]
+[repository]
 name = "provider"
 class = "core"
 version = "0.1.0"

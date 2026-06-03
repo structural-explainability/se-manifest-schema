@@ -19,7 +19,7 @@ Supported filenames are:
 ## Section
 
 A top-level TOML table in a repository manifest.
-Examples include `[repo]`, `[layer]`, and `[scope]`.
+Examples include `[repository]`, `[layer]`, and `[scope]`.
 Sections are defined by `[section.*]` entries in the schema.
 
 ## Field
@@ -29,7 +29,7 @@ Fields are defined by entries under `[field.*]` in the schema.
 
 ## Class
 
-A repository type declared by `[repo].class`.
+A repository type declared by `[repository].class`.
 Class-specific requirements are defined by `[class.*]` entries in the schema.
 
 ## Required Section

@@ -31,8 +31,8 @@ def test_missing_field_definition_detected() -> None:
     schema = cast(
         ManifestSchemaData,
         {
-            "section": {"repo": {"allowed_fields": ["name"]}},
-            "field": {"repo": {}},
+            "section": {"repository": {"allowed_fields": ["name"]}},
+            "field": {"repository": {}},
             "class": {},
             "manifest": {
                 "filename": "SE_MANIFEST.toml",
@@ -42,15 +42,15 @@ def test_missing_field_definition_detected() -> None:
         },
     )
     errors = validate_schema_internal(schema)
-    assert any("repo.name" in error for error in errors)
+    assert any("repository.name" in error for error in errors)
 
 
 def test_unknown_field_type_detected() -> None:
     schema = cast(
         ManifestSchemaData,
         {
-            "section": {"repo": {"allowed_fields": ["name"]}},
-            "field": {"repo": {"name": {"type": "badtype", "required": True}}},
+            "section": {"repository": {"allowed_fields": ["name"]}},
+            "field": {"repository": {"name": {"type": "badtype", "required": True}}},
             "class": {},
             "manifest": {
                 "filename": "SE_MANIFEST.toml",
@@ -272,9 +272,6 @@ def test_contract_roles_registry_must_include_domain_contract() -> None:
     assert any("domain-contract" in error for error in errors)
 
 
-# ── additional branch coverage ─────────────────────────────────────────────────
-
-
 def test_allowed_manifest_filenames_with_empty_string_item_detected() -> None:
     schema = cast(
         ManifestSchemaData,
@@ -353,7 +350,7 @@ def test_custom_type_kind_must_be_record() -> None:
                     "fields": "dependency_fields",
                 }
             },
-            "dependency_fields": {"allowed_fields": ["repo", "version"]},
+            "dependency_fields": {"allowed_fields": ["repository", "version"]},
             "manifest": {
                 "filename": "SE_MANIFEST.toml",
                 "allowed_filenames": ["SE_MANIFEST.toml", "MANIFEST.toml"],
@@ -472,22 +469,22 @@ def test_iter_field_definitions_collects_typed_nodes() -> None:
     from se_manifest_schema.validate_schema import iter_field_definitions
 
     fields = {
-        "repo": {
+        "repository": {
             "name": {"type": "string", "required": True},
             "class": {"type": "string", "required": True},
         }
     }
     results = iter_field_definitions(fields)
     paths = {path for path, _ in results}
-    assert "repo.name" in paths
-    assert "repo.class" in paths
+    assert "repository.name" in paths
+    assert "repository.class" in paths
 
 
 def test_class_with_optional_and_forbidden_sections_unknown_detected() -> None:
     schema = cast(
         ManifestSchemaData,
         {
-            "section": {"repo": {"allowed_fields": []}},
+            "section": {"repository": {"allowed_fields": []}},
             "field": {},
             "class": {
                 "myclass": {
@@ -505,3 +502,219 @@ def test_class_with_optional_and_forbidden_sections_unknown_detected() -> None:
     errors = validate_schema_internal(schema)
     assert any("unknown-opt" in error for error in errors)
     assert any("unknown-forb" in error for error in errors)
+
+
+def _valid_minimal_schema_data() -> dict[str, object]:
+    """Return a minimal internally consistent schema fixture."""
+    return {
+        "section": {
+            "meta": {"allowed_fields": ["purpose"], "required": True},
+            "repository": {
+                "allowed_fields": ["name", "organization", "class"],
+                "required": True,
+            },
+            "layer": {"allowed_fields": ["role"], "required": True},
+            "depends": {"allowed_fields": ["required", "optional"], "required": True},
+            "provides": {"allowed_fields": ["artifacts"], "required": True},
+            "scope": {"allowed_fields": ["includes", "excludes"], "required": True},
+            "compatibility": {
+                "allowed_fields": ["constitution", "kernel", "schema"],
+                "required": False,
+            },
+            "citation": {"allowed_fields": ["cff", "preferred"], "required": True},
+            "traceability": {"allowed_fields": ["identifier_map"], "required": True},
+        },
+        "field": {
+            "meta": {
+                "purpose": {"required": False, "type": "string"},
+            },
+            "repository": {
+                "name": {"required": True, "type": "string"},
+                "organization": {"required": True, "type": "string"},
+                "class": {"required": True, "type": "string"},
+            },
+            "layer": {
+                "role": {"required": True, "type": "string"},
+            },
+            "depends": {
+                "required": {"required": True, "type": "list[dependency]"},
+                "optional": {"required": True, "type": "list[dependency]"},
+            },
+            "provides": {
+                "artifacts": {"required": True, "type": "list[string]"},
+            },
+            "scope": {
+                "includes": {"required": True, "type": "list[string]"},
+                "excludes": {"required": True, "type": "list[string]"},
+            },
+            "compatibility": {
+                "constitution": {"required": False, "type": "string"},
+                "kernel": {"required": False, "type": "string"},
+                "schema": {"required": False, "type": "list[string]"},
+            },
+            "citation": {
+                "cff": {"required": True, "type": "string"},
+                "preferred": {"required": True, "type": "string"},
+            },
+            "traceability": {
+                "identifier_map": {"required": True, "type": "string"},
+            },
+            "dependency": {
+                "repository": {"required": True, "type": "string"},
+                "kind": {"required": True, "type": "string"},
+            },
+            "contract": {
+                "contract_role": {
+                    "required": False,
+                    "type": "string",
+                    "constraints": ["known-contract-role"],
+                },
+            },
+        },
+        "custom_types": {"allowed": ["dependency"]},
+        "custom_type": {
+            "dependency": {
+                "kind": "record",
+                "fields": "dependency_fields",
+            },
+        },
+        "dependency_fields": {
+            "allowed_fields": ["repository", "kind"],
+        },
+        "contract_roles": {"allowed": ["authority", "domain-contract"]},
+        "manifest": {
+            "filename": "SE_MANIFEST.toml",
+            "allowed_filenames": ["SE_MANIFEST.toml", "MANIFEST.toml"],
+        },
+        "validation": {
+            "require_manifest_filename_allowed": True,
+            "require_class_required_sections_present": True,
+            "require_sections_to_be_required_or_optional_for_class": True,
+            "require_class_forbidden_sections_absent": True,
+            "require_layer_role_to_match_declared_class": True,
+            "require_compatibility_fields_for_class": True,
+        },
+        "class": {
+            "specification": {
+                "required_repo_name_patterns": ["accountable-{focus}-spec"],
+                "required_layer_roles": ["specification"],
+                "required_sections": [
+                    "meta",
+                    "repository",
+                    "layer",
+                    "depends",
+                    "provides",
+                    "scope",
+                    "citation",
+                    "traceability",
+                ],
+                "optional_sections": ["compatibility"],
+                "forbidden_sections": [],
+                "required_compatibility_fields": [],
+            },
+        },
+    }
+
+
+def _validation_table(data: dict[str, object]) -> dict[str, object]:
+    """Return the validation table from a mutable schema fixture."""
+    validation = data["validation"]
+    assert isinstance(validation, dict)
+    return cast(dict[str, object], validation)
+
+
+def _specification_class_table(data: dict[str, object]) -> dict[str, object]:
+    """Return the specification class table from a mutable schema fixture."""
+    classes_raw = data["class"]
+    assert isinstance(classes_raw, dict)
+    classes = cast(dict[str, object], classes_raw)
+    specification_raw = classes["specification"]
+    assert isinstance(specification_raw, dict)
+    return cast(dict[str, object], specification_raw)
+
+
+def test_rejects_missing_class_validation_rule() -> None:
+    """Schema validation requires class-registry enforcement rules."""
+    data = _valid_minimal_schema_data()
+    validation = _validation_table(data)
+    validation.pop("require_class_required_sections_present")
+    errors = validate_schema_internal(cast(ManifestSchemaData, data))
+    assert "validation.require_class_required_sections_present: must be true" in errors
+
+
+def test_rejects_class_without_required_layer_roles() -> None:
+    """Every class must declare at least one allowed layer role."""
+    data = _valid_minimal_schema_data()
+    specification = _specification_class_table(data)
+    specification["required_layer_roles"] = []
+    errors = validate_schema_internal(cast(ManifestSchemaData, data))
+    assert "class.specification.required_layer_roles: must not be empty" in errors
+
+
+def test_rejects_class_without_required_repo_name_patterns() -> None:
+    """Every class must declare at least one repository name pattern."""
+    data = _valid_minimal_schema_data()
+    specification = _specification_class_table(data)
+    specification["required_repo_name_patterns"] = []
+    errors = validate_schema_internal(cast(ManifestSchemaData, data))
+    assert (
+        "class.specification.required_repo_name_patterns: must not be empty" in errors
+    )
+
+
+def test_rejects_class_without_required_sections() -> None:
+    """Every class must declare at least one required section."""
+    data = _valid_minimal_schema_data()
+    specification = _specification_class_table(data)
+    specification["required_sections"] = []
+    errors = validate_schema_internal(cast(ManifestSchemaData, data))
+    assert "class.specification.required_sections: must not be empty" in errors
+
+
+def test_rejects_required_optional_section_overlap() -> None:
+    """A section cannot be both required and optional for one class."""
+    data = _valid_minimal_schema_data()
+    specification = _specification_class_table(data)
+    specification["optional_sections"] = ["meta"]
+    errors = validate_schema_internal(cast(ManifestSchemaData, data))
+    assert (
+        "class.specification: section 'meta' cannot be both required and optional"
+        in errors
+    )
+
+
+def test_rejects_required_forbidden_section_overlap() -> None:
+    """A section cannot be both required and forbidden for one class."""
+    data = _valid_minimal_schema_data()
+    specification = _specification_class_table(data)
+    specification["forbidden_sections"] = ["repository"]
+    errors = validate_schema_internal(cast(ManifestSchemaData, data))
+    assert (
+        "class.specification: section 'repository' cannot be both required and forbidden"
+        in errors
+    )
+
+
+def test_rejects_optional_forbidden_section_overlap() -> None:
+    """A section cannot be both optional and forbidden for one class."""
+    data = _valid_minimal_schema_data()
+    specification = _specification_class_table(data)
+    specification["optional_sections"] = ["compatibility"]
+    specification["forbidden_sections"] = ["compatibility"]
+    errors = validate_schema_internal(cast(ManifestSchemaData, data))
+    assert (
+        "class.specification: section 'compatibility' cannot be both optional and forbidden"
+        in errors
+    )
+
+
+def test_rejects_unknown_required_compatibility_field() -> None:
+    """Required compatibility fields must be allowed compatibility fields."""
+    data = _valid_minimal_schema_data()
+    specification = _specification_class_table(data)
+    specification["required_compatibility_fields"] = ["unknown_field"]
+    errors = validate_schema_internal(cast(ManifestSchemaData, data))
+    assert (
+        "class.specification.required_compatibility_fields: "
+        "unknown compatibility field 'unknown_field'"
+    ) in errors

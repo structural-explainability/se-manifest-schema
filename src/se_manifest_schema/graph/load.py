@@ -118,7 +118,7 @@ def _repository_from_manifest(
     manifest: dict[str, Any],
 ) -> GraphRepository:
     """Build a graph repository from one manifest."""
-    repo = cast(dict[str, Any], manifest.get("repo", {}))
+    repo = cast(dict[str, Any], manifest.get("repository", {}))
     layer = cast(dict[str, Any], manifest.get("layer", {}))
     provides = cast(dict[str, Any], manifest.get("provides", {}))
 
@@ -193,7 +193,7 @@ def _dependency_edges_from_items(
             continue
 
         item_typed = cast(dict[str, Any], item)
-        target = item_typed.get("repo")
+        target = item_typed.get("repository")
         kind = item_typed.get("kind", "semantic")
         version = item_typed.get("version")
         reason = item_typed.get("reason")

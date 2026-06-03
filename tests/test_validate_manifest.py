@@ -19,11 +19,11 @@ def _minimal_schema() -> ManifestSchemaData:
                 }
             },
             "section": {
-                "repo": {"required": True, "allowed_fields": ["name", "class"]},
+                "repository": {"required": True, "allowed_fields": ["name", "class"]},
                 "scope": {"required": True, "allowed_fields": ["includes", "excludes"]},
             },
             "field": {
-                "repo": {
+                "repository": {
                     "name": {"type": "string", "required": True},
                     "class": {"type": "string", "required": True},
                 },
@@ -34,7 +34,7 @@ def _minimal_schema() -> ManifestSchemaData:
             },
             "class": {
                 "test_class": {
-                    "required_sections": ["repo", "scope"],
+                    "required_sections": ["repository", "scope"],
                     "optional_sections": [],
                     "forbidden_sections": [],
                 }
@@ -51,7 +51,7 @@ def _minimal_manifest() -> dict[str, Any]:
     return {
         "schema": "se-manifest-2",
         "schema_url": "https://example.com",
-        "repo": {"name": "se-test", "class": "test_class"},
+        "repository": {"name": "se-test", "class": "test_class"},
         "scope": {"includes": ["something"], "excludes": []},
     }
 
@@ -83,7 +83,7 @@ def test_forbidden_section_detected() -> None:
             **_minimal_schema(),
             "class": {
                 "test_class": {
-                    "required_sections": ["repo", "scope"],
+                    "required_sections": ["repository", "scope"],
                     "optional_sections": [],
                     "forbidden_sections": ["scope"],
                 }
@@ -103,7 +103,7 @@ def test_unknown_section_detected() -> None:
 
 def test_unknown_field_detected() -> None:
     manifest = _minimal_manifest()
-    manifest["repo"]["unknown_field"] = "value"
+    manifest["repository"]["unknown_field"] = "value"
     errors = validate_manifest(manifest, _minimal_schema())
     assert any("unknown_field" in e for e in errors)
 
@@ -124,16 +124,16 @@ def test_missing_schema_url_detected() -> None:
 
 def test_unknown_class_detected() -> None:
     manifest = _minimal_manifest()
-    manifest["repo"]["class"] = "nonexistent"
+    manifest["repository"]["class"] = "nonexistent"
     errors = validate_manifest(manifest, _minimal_schema())
     assert any("nonexistent" in e for e in errors)
 
 
 def test_missing_repo_section_detected() -> None:
     manifest = _minimal_manifest()
-    del manifest["repo"]
+    del manifest["repository"]
     errors = validate_manifest(manifest, _minimal_schema())
-    assert any("repo" in e for e in errors)
+    assert any("repository" in e for e in errors)
 
 
 def test_manifest_filename_allowed_accepts_se_manifest() -> None:
@@ -250,7 +250,7 @@ def test_contract_authority_must_equal_repo_name() -> None:
 
     errors = validate_manifest(manifest, _contract_schema())
 
-    assert any("must equal [repo].name" in error for error in errors)
+    assert any("must equal [repository].name" in error for error in errors)
 
 
 def test_authority_role_must_not_consume_contract() -> None:
@@ -308,7 +308,7 @@ def _authority_manifest() -> dict[str, Any]:
     return {
         "schema": "se-manifest-2",
         "schema_url": "https://example.com",
-        "repo": {"name": "accountable-record", "class": "contract"},
+        "repository": {"name": "accountable-record", "class": "contract"},
         "contract": {
             "contract_role": "authority",
             "contract_authority": "accountable-record",
@@ -331,7 +331,7 @@ def _contract_schema() -> ManifestSchemaData:
                 "allowed_filenames": ["SE_MANIFEST.toml", "MANIFEST.toml"],
             },
             "section": {
-                "repo": {"required": True, "allowed_fields": ["name", "class"]},
+                "repository": {"required": True, "allowed_fields": ["name", "class"]},
                 "contract": {
                     "required": True,
                     "allowed_fields": [
@@ -343,7 +343,7 @@ def _contract_schema() -> ManifestSchemaData:
                 },
             },
             "field": {
-                "repo": {
+                "repository": {
                     "name": {"type": "string", "required": True},
                     "class": {"type": "string", "required": True},
                 },
@@ -360,7 +360,7 @@ def _contract_schema() -> ManifestSchemaData:
             },
             "class": {
                 "contract": {
-                    "required_sections": ["repo", "contract"],
+                    "required_sections": ["repository", "contract"],
                     "optional_sections": [],
                     "forbidden_sections": [],
                 }
@@ -391,7 +391,7 @@ def _domain_contract_manifest() -> dict[str, Any]:
     return {
         "schema": "se-manifest-2",
         "schema_url": "https://example.com",
-        "repo": {"name": "judicial-record", "class": "contract"},
+        "repository": {"name": "judicial-record", "class": "contract"},
         "contract": {
             "contract_role": "domain-contract",
             "contract_authority": "judicial-record",
@@ -401,21 +401,18 @@ def _domain_contract_manifest() -> dict[str, Any]:
     }
 
 
-# ── additional branch coverage ─────────────────────────────────────────────────
-
-
 def test_missing_repo_class_string_detected() -> None:
     manifest = _minimal_manifest()
-    manifest["repo"] = {"name": "se-test"}  # class missing entirely
+    manifest["repository"] = {"name": "se-test"}  # class missing entirely
     errors = validate_manifest(manifest, _minimal_schema())
-    assert any("[repo].class" in e for e in errors)
+    assert any("[repository].class" in e for e in errors)
 
 
 def test_missing_repo_name_string_detected() -> None:
     manifest = _minimal_manifest()
-    manifest["repo"] = {"class": "test_class"}  # name missing
+    manifest["repository"] = {"class": "test_class"}  # name missing
     errors = validate_manifest(manifest, _minimal_schema())
-    assert any("[repo].name" in e for e in errors)
+    assert any("[repository].name" in e for e in errors)
 
 
 def test_required_field_missing_in_section_detected() -> None:
@@ -424,7 +421,7 @@ def test_required_field_missing_in_section_detected() -> None:
         {
             **_minimal_schema(),
             "field": {
-                "repo": {
+                "repository": {
                     "name": {"type": "string", "required": True},
                     "class": {"type": "string", "required": True},
                 },
@@ -469,7 +466,7 @@ def test_contract_section_non_dict_skips_contract_rules() -> None:
             **_contract_schema(),
             "class": {
                 "contract": {
-                    "required_sections": ["repo"],
+                    "required_sections": ["repository"],
                     "optional_sections": ["contract"],
                     "forbidden_sections": [],
                 }

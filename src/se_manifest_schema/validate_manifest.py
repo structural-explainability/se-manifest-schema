@@ -20,7 +20,7 @@ from typing import Any, cast
 
 from se_manifest_schema.types.manifest_schema import ManifestSchemaData
 
-__all_ = ["validate_manifest"]
+__all__ = ["validate_manifest"]
 
 
 def validate_manifest(
@@ -48,13 +48,61 @@ def validate_manifest(
         errors=errors,
     )
 
-    # --- top-level identity ---
-    manifest_section = schema.get("manifest")
-    identity: dict[str, object] = {}
-    if isinstance(manifest_section, dict):
-        identity_raw = manifest_section.get("identity")
-        if isinstance(identity_raw, dict):
-            identity = identity_raw
+    _validate_top_level_identity(
+        schema=schema,
+        manifest=manifest,
+        errors=errors,
+    )
+
+    repository_context = _get_repository_context(
+        schema=schema,
+        manifest=manifest,
+        errors=errors,
+    )
+    if repository_context is None:
+        return errors
+
+    class_name, repo_name, class_def = repository_context
+
+    manifest_sections = _get_manifest_sections(manifest)
+
+    _validate_class_section_rules(
+        schema=schema,
+        manifest=manifest,
+        class_name=class_name,
+        class_def=class_def,
+        manifest_sections=manifest_sections,
+        rules=rules,
+        errors=errors,
+    )
+
+    _validate_manifest_section_fields(
+        schema=schema,
+        manifest=manifest,
+        manifest_sections=manifest_sections,
+        rules=rules,
+        errors=errors,
+    )
+
+    _validate_contract_rules(
+        schema=schema,
+        manifest=manifest,
+        class_name=class_name,
+        repo_name=repo_name,
+        errors=errors,
+    )
+
+    return errors
+
+
+def _validate_top_level_identity(
+    *,
+    schema: ManifestSchemaData,
+    manifest: dict[str, Any],
+    errors: list[str],
+) -> None:
+    """Validate top-level identity fields declared by the schema."""
+    identity = _get_manifest_identity(schema)
 
     schema_required = identity.get("schema_required")
     if isinstance(schema_required, bool) and schema_required:
@@ -76,56 +124,88 @@ def validate_manifest(
     ):
         errors.append("manifest.schema_url: required but missing")
 
-    # --- repo class ---
-    repo = manifest.get("repo")
-    if not isinstance(repo, dict):
-        errors.append("manifest missing required [repo] section")
-        return errors
 
-    typed_repo = cast(dict[str, object], repo)
-    class_name = typed_repo.get("class")
+def _get_repository_context(
+    *,
+    schema: ManifestSchemaData,
+    manifest: dict[str, Any],
+    errors: list[str],
+) -> tuple[str, str, dict[str, Any]] | None:
+    """Return class, repository name, and class definition or report errors."""
+    repository = manifest.get("repository")
+    if not isinstance(repository, dict):
+        errors.append("manifest missing required [repository] section")
+        return None
+
+    typed_repository = cast(dict[str, object], repository)
+    class_name = typed_repository.get("class")
     if not isinstance(class_name, str):
-        errors.append("[repo].class: required string field missing")
-        return errors
+        errors.append("[repository].class: required string field missing")
+        return None
 
-    repo_name = typed_repo.get("name")
+    repo_name = typed_repository.get("name")
     if not isinstance(repo_name, str):
-        errors.append("[repo].name: required string field missing")
-        return errors
+        errors.append("[repository].name: required string field missing")
+        return None
 
     class_def = _get_class_def(schema, class_name)
     if class_def is None:
-        errors.append(f"[repo].class: unknown class '{class_name}'")
-        return errors
+        errors.append(f"[repository].class: unknown class '{class_name}'")
+        return None
 
+    return class_name, repo_name, class_def
+
+
+def _get_manifest_sections(manifest: dict[str, Any]) -> set[str]:
+    """Return section names whose values are TOML tables (dicts)."""
+    return {k for k in manifest if isinstance(manifest.get(k), dict)}
+
+
+def _validate_class_section_rules(
+    *,
+    schema: ManifestSchemaData,
+    manifest: dict[str, Any],
+    class_name: str,
+    class_def: dict[str, Any],
+    manifest_sections: set[str],
+    rules: dict[str, Any],
+    errors: list[str],
+) -> None:
+    """Validate section presence/absence rules for a repository class."""
     known_sections = set(schema.get("section", {}).keys())
-    manifest_sections = {k for k in manifest if isinstance(manifest.get(k), dict)}
 
-    # --- unknown sections ---
     if rules.get("require_known_sections_only"):
         for section in manifest_sections:
             if section not in known_sections:
                 errors.append(f"unknown section '[{section}]'")
 
-    # --- required sections ---
     for section in class_def.get("required_sections", []):
         if section not in manifest:
             errors.append(
                 f"class '{class_name}' requires section '[{section}]' but it is missing"
             )
 
-    # --- forbidden sections ---
     for section in class_def.get("forbidden_sections", []):
         if section in manifest:
             errors.append(
                 f"class '{class_name}' forbids section '[{section}]' but it is present"
             )
 
-    # --- fields within sections ---
+
+def _validate_manifest_section_fields(
+    *,
+    schema: ManifestSchemaData,
+    manifest: dict[str, Any],
+    manifest_sections: set[str],
+    rules: dict[str, Any],
+    errors: list[str],
+) -> None:
+    """Validate unknown/required fields and field constraints for each section."""
     for section_name in manifest_sections:
         section_def = _get_section_def(schema, section_name)
         if section_def is None:
             continue
+
         section_data = manifest.get(section_name, {})
         if not isinstance(section_data, dict):
             continue
@@ -135,14 +215,12 @@ def validate_manifest(
             field for field in allowed_fields if isinstance(field, str)
         }
 
-        # unknown fields
         if rules.get("require_known_fields_only"):
             section_data_typed = cast(dict[str, object], section_data)
             for field_name in section_data_typed:
                 if field_name not in allowed_field_names:
                     errors.append(f"[{section_name}].{field_name}: unknown field")
 
-        # required fields
         for field_name in allowed_field_names:
             field_def = _get_field_def(schema, section_name, field_name)
             if field_def is None:
@@ -157,15 +235,16 @@ def validate_manifest(
             errors=errors,
         )
 
-    _validate_contract_rules(
-        schema=schema,
-        manifest=manifest,
-        class_name=class_name,
-        repo_name=repo_name,
-        errors=errors,
-    )
 
-    return errors
+def _get_manifest_identity(schema: ManifestSchemaData) -> dict[str, object]:
+    """Return manifest identity rules, if present."""
+    manifest_section = schema.get("manifest")
+    if not isinstance(manifest_section, dict):
+        return {}
+    identity = manifest_section.get("identity")
+    if not isinstance(identity, dict):
+        return {}
+    return identity
 
 
 def _get_allowed_contract_roles(schema: ManifestSchemaData) -> set[str]:
@@ -329,7 +408,7 @@ def _validate_contract_rules(
         and contract_authority != repo_name
     ):
         errors.append(
-            f"[contract].contract_authority: must equal [repo].name ('{repo_name}')"
+            f"[contract].contract_authority: must equal [repository].name ('{repo_name}')"
         )
 
     if (

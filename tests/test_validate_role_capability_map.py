@@ -8,8 +8,6 @@ from se_manifest_schema.validation.validate_role_capability_map import (
     validate_role_capability_map_file,
 )
 
-# ── helpers ────────────────────────────────────────────────────────────────────
-
 
 def _minimal_valid_data() -> dict[str, Any]:
     """Return a minimal valid role-capability-map data dict."""
@@ -97,9 +95,6 @@ def _minimal_valid_data() -> dict[str, Any]:
     }
 
 
-# ── validate_role_capability_map_file ─────────────────────────────────────────
-
-
 def test_file_not_found_returns_error(tmp_path: Path) -> None:
     path = tmp_path / "missing.toml"
     errors = validate_role_capability_map_file(path)
@@ -113,9 +108,6 @@ def test_file_valid_returns_no_errors() -> None:
     if real_path.exists():
         errors = validate_role_capability_map_file(real_path)
         assert errors == [], "\n".join(errors)
-
-
-# ── validate_role_capability_map_data ─────────────────────────────────────────
 
 
 def test_valid_data_returns_no_errors() -> None:

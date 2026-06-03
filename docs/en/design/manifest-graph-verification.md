@@ -52,9 +52,9 @@ The graph verifier reads these control-plane artifacts.
 Each repository is expected to declare identity, role, dependencies, and provided artifacts.
 
 ```toml
-[repo]
+[repository]
+organization = "structural-explainability"
 name = "example-repo"
-org = "structural-explainability"
 class = "implementation"
 kind = "python-package"
 status = "active"

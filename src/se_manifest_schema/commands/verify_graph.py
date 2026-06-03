@@ -22,11 +22,6 @@ EXCLUDED_MANIFEST_PATH_PARTS = [
     ("tests", "fixtures"),
 ]
 
-EXCLUDED_MANIFEST_PATHS = [
-    Path(".lake"),
-    Path(".lake/packages"),
-]
-
 
 def run(
     *,

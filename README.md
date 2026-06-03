@@ -4,7 +4,7 @@
 [![Docs Site](https://img.shields.io/badge/docs-site-blue?logo=github)](https://structural-explainability.github.io/se-manifest-schema/)
 [![Repo](https://img.shields.io/badge/repo-GitHub-black?logo=github)](https://github.com/structural-explainability/se-manifest-schema)
 [![Python 3.14](https://img.shields.io/badge/python-3.14%2B-blue?logo=python)](./pyproject.toml)
-[![Python 3.15 Ready](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/python-315-ready.yml/badge.svg?branch=main)](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/python-315-ready.yml)
+[![Python 3.14 Ready](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/python-315-ready.yml/badge.svg?branch=main)](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/python-315-ready.yml)
 [![License](https://img.shields.io/badge/license-MIT-yellow.svg)](./LICENSE)
 
 [![CI](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/ci-python-zensical.yml/badge.svg?branch=main)](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/ci-python-zensical.yml)
@@ -28,7 +28,13 @@ The schema is maintained in:
 
 - [`manifest-schema.toml`](./manifest-schema.toml)
 
-## Command Reference
+## Validate SE_MANIFEST.toml in a Repository
+
+```shell
+uvx se-manifest-schema validate-manifest --path SE_MANIFEST.toml --strict
+```
+
+## Developer Command Reference
 
 <details>
 <summary>Show command reference</summary>
@@ -47,9 +53,6 @@ code .
 ### In a VS Code terminal
 
 ```shell
-# if strange errors, clean uv cache
-# uv cache clean
-
 uv self update
 uv python pin 3.14
 uv sync --extra dev --extra docs --upgrade
@@ -59,7 +62,6 @@ uvx pre-commit install
 git add -A
 uvx pre-commit run --all-files
 # repeat if changes were made
-git add -A
 uvx pre-commit run --all-files
 
 # validate the role capability map

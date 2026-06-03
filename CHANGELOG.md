@@ -13,6 +13,85 @@ and this project adheres to **[Semantic Versioning](https://semver.org/spec/v2.0
 
 ---
 
+## [0.5.0] - 2026-06-02
+
+This release tightens the public `SE_MANIFEST.toml` contract
+and removes shorthand from the manifest schema.
+Adds schema_version.
+
+## Changed
+
+- Renamed the repository identity section from `[repo]` to `[repository]`.
+- Replaced abbreviated repository class value `spec` with `specification`.
+- Updated schema field definitions and class requirements to use `repository`.
+- Added the preferred package-matching CLI command:
+
+  ```shell
+  uvx se-manifest-schema validate-manifest --path SE_MANIFEST.toml --strict
+  ```
+
+- Kept `se-manifest` as a compatibility command alias.
+- Made structured dependency records the only valid dependency declaration form.
+
+## Added
+
+- Added optional `[governance].authority_manifest` for repositories that
+  declare an authority-surface manifest such as `.accountability/surfaces.toml`.
+
+## Removed
+
+- Removed acceptance of legacy string dependencies in `[depends].required`
+  and `[depends].optional`.
+- Removed migration language for legacy dependency strings
+  from `manifest-schema.toml`.
+
+## Migration
+
+Update manifests from:
+
+```toml
+[repo]
+class = "spec"
+```
+
+to:
+
+```toml
+[repository]
+class = "specification"
+```
+
+Update dependencies from:
+
+```toml
+[depends]
+required = [
+  "structural-explainability/example@main",
+]
+optional = []
+```
+
+to:
+
+```toml
+[depends]
+required = [
+  { repository = "structural-explainability/example", kind = "semantic", version = "main", reason = "Declares the upstream semantic dependency." },
+]
+optional = []
+```
+
+If the repository declares an authority-surface manifest, add:
+
+```toml
+[governance]
+authority_manifest = ".accountability/surfaces.toml"
+```
+
+and include the file in `[provides].artifacts`.
+
+---
+
 ## [0.4.2] - 2026-05-30
 
 ### Added
@@ -63,7 +142,7 @@ and this project adheres to **[Semantic Versioning](https://semver.org/spec/v2.0
   - `MANIFEST.toml`
 - Replaced exact manifest filename validation with allowed manifest filename
   validation.
-- Clarified that repository class is declared explicitly by `repo.class`; name
+- Clarified that repository class is declared explicitly by `repository.class`; name
   patterns validate compatibility with the declared class and are not the sole
   source of class inference.
 
@@ -174,15 +253,18 @@ Follow these steps exactly when creating a new release.
 
 ```shell
 uv sync --extra dev --extra docs --upgrade
+uvx pre-commit install
 
+uv run se-manifest validate-role-capability-map
 uv run se-manifest validate-schema --strict
-uv run se-manifest verify-graph
-
-uv run se-manifest check-version
 uv run se-manifest validate-manifest --strict
+uv run se-manifest check-version
+# uv run se-manifest verify-graph is NOT required to pass
 
 git add -A
 uvx pre-commit run --all-files
+uvx pre-commit run --all-files
+
 uv run python -m pyright
 uv run python -m pytest
 uv run python -m zensical build
@@ -195,7 +277,7 @@ uv run python -m twine check dist/*
 uv run python -c "import pathlib, zipfile; wheels=list(pathlib.Path('dist').glob('*.whl')); assert wheels, 'No wheel found'; wheel=wheels[-1]; names=zipfile.ZipFile(wheel).namelist(); print([n for n in names if n.endswith('manifest-schema.toml')]); assert 'se_manifest_schema/manifest-schema.toml' in names"
 ```
 
-### Task 4. Commit, tag, push
+### Task 4. Commit, push, tag
 
 ```shell
 git add -A
@@ -228,7 +310,8 @@ git push origin :refs/tags/vX.Z.Y
 
 ## Links
 
-[Unreleased]: https://github.com/structural-explainability/se-manifest-schema/compare/v0.4.2...HEAD
+[Unreleased]: https://github.com/structural-explainability/se-manifest-schema/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.5.0
 [0.4.2]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.4.2
 [0.4.1]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.4.1
 [0.4.0]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.4.0

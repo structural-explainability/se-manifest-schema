@@ -88,13 +88,21 @@ class ContractValidationTable(TypedDict, total=False):
 class ValidationTable(TypedDict, total=False):
     """Validation rule table."""
 
-    require_known_sections_only: bool
-    require_known_fields_only: bool
-    require_single_repo_class: bool
-    require_repo_name_to_match_declared_class: bool
     require_declared_class_to_exist_in_class_registry: bool
     require_dependencies_to_follow_dependency_law: bool
+    require_dependency_kind: bool
+    require_dependency_kind_to_be_known: bool
+    require_known_fields_only: bool
+    require_known_sections_only: bool
     require_manifest_filename_allowed: bool
+    require_repository_name_to_match_declared_class: bool
+    require_single_repository_class: bool
+    require_class_required_sections_present: bool
+    require_sections_to_be_required_or_optional_for_class: bool
+    require_class_forbidden_sections_absent: bool
+    require_layer_role_to_match_declared_class: bool
+    require_compatibility_fields_for_class: bool
+
     defaults: ValidationDefaultsTable
     contract: ContractValidationTable
 

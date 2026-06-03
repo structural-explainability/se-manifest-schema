@@ -17,7 +17,7 @@
 
 ## Requirements
 
-- Use **uv** for all environment, dependency, and run commands in this repo.
+- Use **uv** for all environment, dependency, and run commands in this repository.
 - Do **not** recommend or use `pip install ...` as the primary workflow.
 - The canonical Python version is defined in `.python-version`.
 - Commands and guidance must work on Windows, macOS, and Linux.

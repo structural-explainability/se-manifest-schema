@@ -3,53 +3,66 @@
 # ============================================================
 
 schema = "se-manifest-schema"
+schema_version = "0.5.0"
 schema_url = "https://raw.githubusercontent.com/structural-explainability/se-manifest-schema/main/manifest-schema.toml"
+
+# === Framework Context ===
+
+[meta]
+framework = "Structural Explainability"
+framework_url = "https://github.com/structural-explainability"
+purpose = "Declares this repository's role in the Structural Explainability ecosystem."
 
 # === Repository Identity ===
 
-[meta]
-purpose = "Declares the standalone manifest schema repository for the Structural Explainability ecosystem."
-
-[repo]
+[repository]
+organization = "structural-explainability"
 name = "se-manifest-schema"
-org = "structural-explainability"
 class = "manifest_schema"
 kind = "foundation"
-status = "active"
 since = "2026"
+status = "active"
 summary = "Canonical manifest schema defining SE_MANIFEST.toml structure and validation rules."
 
 # === Layer Position ===
 
 [layer]
-space = "schema"
 role = "manifest-schema"
+space = "schema"
 
 # === Dependency Declarations ===
 
 [depends]
-required = []
 optional = [
-    { repo = "se-contract-kit", kind = "tooling" },
+    { repository = "se-contract-kit", kind = "tooling", version = "main", reason = "Optional tooling dependency for contract-related validation and packaging workflows." },
 ]
+required = []
 
 # === Provided Artifacts ===
 
 [provides]
 artifacts = [
-    "manifest-schema.toml",
+    ".accountability/surfaces.toml",
     "data/schema/role-capability-map.toml",
     "data/schema/role-capability-map.schema.toml",
     "docs/en/design/manifest-graph-verification.md",
     "docs/en/design/role-capability-map-review.md",
+    "manifest-schema.toml",
 ]
+
+# === Governance and Authority Surfaces ===
+
+[governance]
+authority_manifest = ".accountability/surfaces.toml"
+
+# === Exported Artifacts ===
 
 [exports]
 manifest_schema = "manifest-schema.toml"
 role_capability_map = "data/schema/role-capability-map.toml"
 
 [validation]
-graph_entrypoint = "se-manifest verify-graph --strict"
+graph_entrypoint = "se-manifest-schema verify-graph --strict"
 
 # === Scope ===
 
