@@ -6,8 +6,12 @@ Run the release validation sequence.
 The script echoes each exact command before running it.
 #>
 
+Clear-Host
+
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+# $PSNativeCommandUseErrorActionPreference = $true
+
 
 function Invoke-Step {
     param(
@@ -45,13 +49,13 @@ Invoke-Step "A2) Install pre-commit hooks" "uvx pre-commit install" {
 # C) Package command surface and manifest validation
 # ============================================================
 
-Invoke-Step "C1) Validate role capability map" "uv run se-manifest validate-role-capability-map" {
-    uv run se-manifest validate-role-capability-map
+Invoke-Step "C1) Validate role capability map" "uv run se-manifest-schema validate-role-capability-map" {
+    uv run se-manifest-schema validate-role-capability-map
 }
 
-Invoke-Step "C2) Verify manifest dependency graph" "uv run se-manifest verify-graph" {
-    uv run se-manifest verify-graph
-}
+# Invoke-Step "C2) Verify manifest dependency graph" "uv run se-manifest-schema verify-graph" {
+#     uv run se-manifest-schema verify-graph
+# }
 
 Invoke-Step "C3) Validate manifest schema" "uv run se-manifest validate-schema --strict" {
     uv run se-manifest validate-schema --strict
@@ -65,6 +69,15 @@ Invoke-Step "C5) Check version metadata" "uv run se-manifest check-version" {
     uv run se-manifest check-version
 }
 
+Invoke-Step "C6) Generate CODEOWNERS file" "uvx se-codeowners generate --strict --output .github/CODEOWNERS" {
+    uvx se-codeowners generate --strict --output .github/CODEOWNERS
+}
+
+Invoke-Step "C7) Confirm current CODEOWNERS" "uvx se-codeowners check" {
+    uvx se-codeowners check
+}
+
+
 # ============================================================
 # D) Pre-commit and Python tests
 # ============================================================
@@ -73,11 +86,23 @@ Invoke-Step "D1) Stage all changes so pre-commit sees tracked/staged files" "git
     git add -A
 }
 
-Invoke-Step "D2) Run pre-commit checks" "uvx pre-commit run --all-files" {
+Invoke-Step "D2) Run pre-commit autofix pass" "uvx pre-commit run --all-files" {
+    $oldNativePreference = $PSNativeCommandUseErrorActionPreference
+    $PSNativeCommandUseErrorActionPreference = $false
+
     uvx pre-commit run --all-files
+    $exitCode = $LASTEXITCODE
+
+    $PSNativeCommandUseErrorActionPreference = $oldNativePreference
+
+    if ($exitCode -ne 0) {
+        Write-Host ""
+        Write-Host "Pre-commit may have modified files. Staging changes and continuing to verification pass."
+        git add -A
+    }
 }
 
-Invoke-Step "D3) Run pre-commit checks again after autofixes" "uvx pre-commit run --all-files" {
+Invoke-Step "D3) Run pre-commit verification pass" "uvx pre-commit run --all-files" {
     uvx pre-commit run --all-files
 }
 

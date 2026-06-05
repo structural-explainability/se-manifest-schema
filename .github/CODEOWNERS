@@ -1,0 +1,75 @@
+# ============================================================
+# .github/CODEOWNERS
+# ============================================================
+# GENERATED FILE -- do not edit by hand.
+#
+# Source:     .accountability/surfaces.toml
+# Generator:  se-codeowners
+# Repository: se-manifest-schema
+# Regenerate: se-codeowners generate --output .github/CODEOWNERS
+#
+# [codeowners].informs = true means this surfaces manifest intentionally
+# informs the generated GitHub CODEOWNERS projection.
+#
+# [codeowners].requires_code_owner_review = false
+# records whether repository governance expects GitHub branch protection or
+# rulesets to require CODEOWNER review before protected changes merge.
+# Actual enforcement is configured in GitHub, not in this generated file.
+#
+# Each entry reflects the oversight_role assigned to an accountability
+# surface, resolved to a handle via [codeowners.role_handles]. GitHub
+# applies the LAST matching pattern for a given path, so order matters.
+# Surfaces are emitted by codeowners_order, then surface id.
+
+# Surface: package-source (role: maintainer)
+/src/**                         @structural-explainability/maintainers
+
+# Surface: test-suite (role: maintainer)
+/tests/**                       @structural-explainability/maintainers
+
+# Surface: manifest-schema-source (role: spec)
+/manifest-schema.toml           @structural-explainability/spec
+
+# Surface: build-and-package-configuration (role: maintainer)
+/pyproject.toml                 @structural-explainability/maintainers
+/uv.lock                        @structural-explainability/maintainers
+
+# Surface: repository-hygiene-configuration (role: maintainer)
+/.editorconfig                  @structural-explainability/maintainers
+/.gitattributes                 @structural-explainability/maintainers
+/.gitignore                     @structural-explainability/maintainers
+/.pre-commit-config.yaml        @structural-explainability/maintainers
+/.markdownlint-cli2.yaml        @structural-explainability/maintainers
+
+# Surface: documentation-sources (role: maintainer)
+/docs/**                        @structural-explainability/maintainers
+
+# Surface: repository-history (role: maintainer)
+/CHANGELOG.md                   @structural-explainability/maintainers
+/DECISIONS.md                   @structural-explainability/maintainers
+
+# Surface: repository-identity (role: maintainer)
+/CITATION.cff                   @structural-explainability/maintainers
+/README.md                      @structural-explainability/maintainers
+/SE_MANIFEST.toml               @structural-explainability/maintainers
+
+# Surface: repository-governance (role: maintainer)
+/AGENTS.md                      @structural-explainability/maintainers
+/ANNOTATIONS.md                 @structural-explainability/maintainers
+/CONTRIBUTING.md                @structural-explainability/maintainers
+/SECURITY.md                    @structural-explainability/maintainers
+
+# Surface: release-and-ci-workflows (role: release)
+/.github/workflows/**           @structural-explainability/release
+/.github/dependabot.yml         @structural-explainability/release
+
+# Surface: generated-codeowners (role: authority_projection)
+/.github/CODEOWNERS             @structural-explainability/authority-projection
+
+# Surface: security-configuration (role: security)
+/.github/lychee.toml            @structural-explainability/security
+/.github/.yamllint.yml          @structural-explainability/security
+/SECURITY.md                    @structural-explainability/security
+
+# Surface: authority-manifest (role: owner)
+/.accountability/surfaces.toml  @structural-explainability/owners

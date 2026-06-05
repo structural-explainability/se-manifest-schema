@@ -2,9 +2,9 @@
 
 ## Summary
 
-- Repositories: 50
-- Dependencies: 77
-- Diagnostics: 128
+- Repositories: 51
+- Dependencies: 78
+- Diagnostics: 147
 
 ## Diagnostics
 
@@ -14,6 +14,54 @@
     dependency target 'se-kernel' does not resolve (kind=semantic)
 - SE.ORG.UNRESOLVED_DEPENDENCY
     dependency target 'se-kernel' does not resolve (kind=semantic)
+- SE.ORG.MISSING_PROVIDED_ARTIFACT
+    repo  accountable-surface-spec
+    path  C:/Users/edaci/Documents/structural-explainability/accountable-surface-spec/docs/spec/accountable-surfaces.md
+    provided artifact 'docs/spec/accountable-surfaces.md' does not exist
+- SE.ORG.MISSING_PROVIDED_ARTIFACT
+    repo  accountable-surface-spec
+    path  C:/Users/edaci/Documents/structural-explainability/accountable-surface-spec/docs/spec/protected-surface.md
+    provided artifact 'docs/spec/protected-surface.md' does not exist
+- SE.ORG.MISSING_PROVIDED_ARTIFACT
+    repo  accountable-surface-spec
+    path  C:/Users/edaci/Documents/structural-explainability/accountable-surface-spec/docs/spec/manifest-model.md
+    provided artifact 'docs/spec/manifest-model.md' does not exist
+- SE.ORG.MISSING_PROVIDED_ARTIFACT
+    repo  accountable-surface-spec
+    path  C:/Users/edaci/Documents/structural-explainability/accountable-surface-spec/docs/spec/manifest-self-protection.md
+    provided artifact 'docs/spec/manifest-self-protection.md' does not exist
+- SE.ORG.MISSING_PROVIDED_ARTIFACT
+    repo  accountable-surface-spec
+    path  C:/Users/edaci/Documents/structural-explainability/accountable-surface-spec/docs/spec/review-satisfaction.md
+    provided artifact 'docs/spec/review-satisfaction.md' does not exist
+- SE.ORG.MISSING_PROVIDED_ARTIFACT
+    repo  accountable-surface-spec
+    path  C:/Users/edaci/Documents/structural-explainability/accountable-surface-spec/docs/spec/authority-permission-binding.md
+    provided artifact 'docs/spec/authority-permission-binding.md' does not exist
+- SE.ORG.MISSING_PROVIDED_ARTIFACT
+    repo  accountable-surface-spec
+    path  C:/Users/edaci/Documents/structural-explainability/accountable-surface-spec/docs/spec/multi-role-surfaces.md
+    provided artifact 'docs/spec/multi-role-surfaces.md' does not exist
+- SE.ORG.MISSING_PROVIDED_ARTIFACT
+    repo  accountable-surface-spec
+    path  C:/Users/edaci/Documents/structural-explainability/accountable-surface-spec/docs/spec/evidence-attribution.md
+    provided artifact 'docs/spec/evidence-attribution.md' does not exist
+- SE.ORG.MISSING_PROVIDED_ARTIFACT
+    repo  accountable-surface-spec
+    path  C:/Users/edaci/Documents/structural-explainability/accountable-surface-spec/docs/spec/enforcement-mapping.md
+    provided artifact 'docs/spec/enforcement-mapping.md' does not exist
+- SE.ORG.MISSING_PROVIDED_ARTIFACT
+    repo  accountable-surface-spec
+    path  C:/Users/edaci/Documents/structural-explainability/accountable-surface-spec/docs/spec/conformance.md
+    provided artifact 'docs/spec/conformance.md' does not exist
+- SE.ORG.MISSING_PROVIDED_ARTIFACT
+    repo  accountable-surface-spec
+    path  C:/Users/edaci/Documents/structural-explainability/accountable-surface-spec/docs/profiles/repository-protected-surface.md
+    provided artifact 'docs/profiles/repository-protected-surface.md' does not exist
+- SE.ORG.MISSING_PROVIDED_ARTIFACT
+    repo  accountable-surface-spec
+    path  C:/Users/edaci/Documents/structural-explainability/accountable-surface-spec/docs/profiles/lean-theory-repository.md
+    provided artifact 'docs/profiles/lean-theory-repository.md' does not exist
 - SE.ORG.MISSING_PROVIDED_ARTIFACT
     repo  paper-100-neutral-substrate
     path  C:/Users/edaci/Documents/structural-explainability/paper-100-neutral-substrate/paper/*.tex
@@ -222,6 +270,34 @@
     repo  se-admin
     path  C:/Users/edaci/Documents/structural-explainability/se-admin/workflows
     provided artifact 'workflows' does not exist
+- SE.ORG.MISSING_PROVIDED_ARTIFACT
+    repo  se-codeowners
+    path  C:/Users/edaci/Documents/structural-explainability/se-codeowners/theory-reference-loading-engine
+    provided artifact 'theory-reference-loading-engine' does not exist
+- SE.ORG.MISSING_PROVIDED_ARTIFACT
+    repo  se-codeowners
+    path  C:/Users/edaci/Documents/structural-explainability/se-codeowners/theory-reference-validation-engine
+    provided artifact 'theory-reference-validation-engine' does not exist
+- SE.ORG.MISSING_PROVIDED_ARTIFACT
+    repo  se-codeowners
+    path  C:/Users/edaci/Documents/structural-explainability/se-codeowners/theory-reference-scaffold-engine
+    provided artifact 'theory-reference-scaffold-engine' does not exist
+- SE.ORG.MISSING_PROVIDED_ARTIFACT
+    repo  se-codeowners
+    path  C:/Users/edaci/Documents/structural-explainability/se-codeowners/lean-surface-coverage-engine
+    provided artifact 'lean-surface-coverage-engine' does not exist
+- SE.ORG.MISSING_PROVIDED_ARTIFACT
+    repo  se-codeowners
+    path  C:/Users/edaci/Documents/structural-explainability/se-codeowners/reference-artifact-export-engine
+    provided artifact 'reference-artifact-export-engine' does not exist
+- SE.ORG.MISSING_PROVIDED_ARTIFACT
+    repo  se-codeowners
+    path  C:/Users/edaci/Documents/structural-explainability/se-codeowners/reference-catalog-export-engine
+    provided artifact 'reference-catalog-export-engine' does not exist
+- SE.ORG.MISSING_PROVIDED_ARTIFACT
+    repo  se-codeowners
+    path  C:/Users/edaci/Documents/structural-explainability/se-codeowners/reference-validation-result-model
+    provided artifact 'reference-validation-result-model' does not exist
 - SE.ORG.MISSING_PROVIDED_ARTIFACT
     repo  se-constitution
     path  C:/Users/edaci/Documents/structural-explainability/se-constitution/class-registry
@@ -537,6 +613,7 @@
 -paper-capability (class=paper, role=mechanism-characterization)
 -paper-capacity-trajectories (class=paper, role=mechanism-characterization)
 -se-admin (class=admin, role=administration)
+-se-codeowners (class=engine, role=theory-reference-engine)
 -se-constitution (class=constitution, role=constitution)
 -se-contract-kit (class=engine, role=contract-engine)
 -se-formal-contract (class=formal_contract, role=formal-contract)
@@ -615,6 +692,7 @@
 -se-verification-judicial-record -> spec-ib (required, kind=semantic)
 -se-verification-judicial-record -> spec-cee (required, kind=semantic)
 -se-admin -> se-constitution (required, kind=semantic)
+-se-codeowners -> se-manifest-schema (optional, kind=tooling)
 -se-constitution -> se-formal-contract (required, kind=semantic)
 -se-formal-contract -> se-theory-neutral-substrate (required, kind=semantic)
 -se-formal-contract -> se-theory-identity-regimes (required, kind=semantic)

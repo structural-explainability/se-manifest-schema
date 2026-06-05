@@ -122,21 +122,21 @@ repos:
       - id: se-validate-manifest
         name: E2) Validate manifest against schema
         language: system
-        entry: uv run se-manifest validate-manifest --strict
+        entry: uv run se-manifest-schema validate-manifest --strict
         pass_filenames: false
         always_run: true
 
       - id: se-validate-schema
         name: E3) Validate schema internal consistency
         language: system
-        entry: uv run se-manifest validate-schema --strict
+        entry: uv run se-manifest-schema validate-schema --strict
         pass_filenames: false
         always_run: true
 
       - id: se-validate-role-capability-map
         name: E4) Validate role-capability-map
         language: system
-        entry: uv run se-manifest validate-role-capability-map
+        entry: uv run se-manifest-schema validate-role-capability-map
         pass_filenames: false
         always_run: true
 

@@ -261,6 +261,10 @@ uv run se-manifest validate-manifest --strict
 uv run se-manifest check-version
 # uv run se-manifest verify-graph is NOT required to pass
 
+# generate and check CODEOWNERS
+uvx se-codeowners generate --strict --output .github/CODEOWNERS
+uvx se-codeowners check
+
 git add -A
 uvx pre-commit run --all-files
 uvx pre-commit run --all-files
