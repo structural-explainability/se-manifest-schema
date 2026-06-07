@@ -4,7 +4,6 @@
 [![Docs Site](https://img.shields.io/badge/docs-site-blue?logo=github)](https://structural-explainability.github.io/se-manifest-schema/)
 [![Repo](https://img.shields.io/badge/repo-GitHub-black?logo=github)](https://github.com/structural-explainability/se-manifest-schema)
 [![Python 3.14](https://img.shields.io/badge/python-3.14%2B-blue?logo=python)](./pyproject.toml)
-[![Python 3.14 Ready](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/python-315-ready.yml/badge.svg?branch=main)](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/python-315-ready.yml)
 [![License](https://img.shields.io/badge/license-MIT-yellow.svg)](./LICENSE)
 
 [![CI](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/ci-python-zensical.yml/badge.svg?branch=main)](https://github.com/structural-explainability/se-manifest-schema/actions/workflows/ci-python-zensical.yml)
