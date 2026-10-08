@@ -40,11 +40,11 @@ def run(
         manifest = load_manifest(path)
         schema = load_schema()
     except FileNotFoundError as e:
-        print(f"ERROR: {e}")  # noqa: T201
+        print(f"ERROR: {e}")
         return 1
 
     manifest_label = str(path) if path else MANIFEST_FILE_NAME
-    print(f"[validate] {manifest_label}")  # noqa: T201
+    print(f"[validate] {manifest_label}")
 
     if require_tag:
         errors.extend(validate_tag(manifest))
@@ -52,14 +52,14 @@ def run(
     errors.extend(validate_manifest(manifest, cast(ManifestSchemaData, schema)))
 
     for e in errors:
-        print(f"ERROR: {e}")  # noqa: T201
+        print(f"ERROR: {e}")
     for w in warnings:
-        print(f"WARNING: {w}")  # noqa: T201
+        print(f"WARNING: {w}")
 
     if errors:
         return 1
     if strict and warnings:
         return 1
 
-    print("Manifest validation passed.")  # noqa: T201
+    print("Manifest validation passed.")
     return 0

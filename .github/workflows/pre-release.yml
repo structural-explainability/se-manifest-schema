@@ -1,16 +1,11 @@
 # ============================================================
-# .github/workflows/pre-release.yml (SE Manifest Schema)
+# .github/workflows/pre-release.yml (CUSTOM SE SCHEMA - ALL-PY-SRC-PYPI-REPOS)
 # ============================================================
-# VARIANT: se-manifest-schema
-# Updated: 2026-04-30
-
-# WHY-FILE: Pre-release checks and build.
-# REQ: Trigger on version tags like v1.2.3.
+# Updated: 2026-10-08
 #
-# OWNS:
-#   schema validation
-#   SE_MANIFEST.toml validation
-#   artifact integrity checks
+# WHY: Validate tagged Python package artifacts before release.
+# REQ: Reusable by PyPI package repositories.
+# OBS: Generic only; repo-specific artifact checks belong in separate workflows.
 
 name: Pre-Release Checks and Build
 
@@ -19,50 +14,49 @@ on:
   workflow_dispatch: # WHY: Allow manual trigger for pre-release checks if needed.
 
 permissions: # WHY: Use least privileges required.
-  contents: write   # WHY: Create GitHub Release.
-  pages: write      # WHY: Required to deploy to GitHub Pages.
-  id-token: write   # WHY: PyPI Trusted Publishing (OIDC) + deploy-pages OIDC.
+  contents: read
 
 env:
-  PYTHONUNBUFFERED: "1"       # WHY: Real-time logging.
-  PYTHONIOENCODING: "utf-8"   # WHY: Ensure UTF-8 encoding for international characters.
+  PYTHONUNBUFFERED: "1"     # WHY: Real-time logging.
+  PYTHONIOENCODING: "utf-8" # WHY: Ensure UTF-8 encoding for international characters.
 
 jobs:
   pre-release:
     runs-on: ubuntu-latest
     timeout-minutes: 30 # WHY: Prevent hanging jobs. If over, it is likely stuck.
-    environment: pypi  # WHY: Use 'pypi' environment for PyPI publishing; ignore warnings.
-    env:
-      PYTHON_VERSION: "3.14"
 
     steps:
-
-      # === ASSEMBLE ===
+      # ============================================================
+      # A) ASSEMBLE: Checkout code and set up environment
+      # ============================================================
 
       - name: A1) Checkout repository with full history and tags
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0   # WHY: hatch-vcs needs full history to derive version from tags.
           fetch-tags: true
           ref: ${{ github.ref }}
+          persist-credentials: false
 
-      - name: A2) Configure GitHub Pages
-        # WHY: Sets Pages metadata for deployments.
-        uses: actions/configure-pages@v6
-
-      - name: A3) Install uv (with caching and uv.lock awareness)
-        uses: astral-sh/setup-uv@v7
+      - name: A2) Install uv (with caching)
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: true
+          # WHY: Cache uv-managed artifacts for faster subsequent runs.
           cache-dependency-glob: "uv.lock"
+          # WHY: Invalidate dependency cache when the committed lockfile changes.
 
-      - name: A4) Install Python ${{ env.PYTHON_VERSION }}
-        run: uv python install ${{ env.PYTHON_VERSION }}
+      - name: A3) Install project Python
+        run: uv python install
+        # WHY: Ensures the Python version declared in .python-version is available.
+        # OBS: uv manages the interpreter locally in the CI environment.
 
-      - name: A5) Display versions
+      - name: A4) Display versions
         run: |
           uv --version
-          uv run python --version
+          uv run --locked python --version
+        # WHY: Version output makes release logs easier to debug.
+
 
       # === BASELINE CHECKS (build while git is pristine) ===
 
@@ -87,49 +81,142 @@ jobs:
         # to avoid working tree changes invalidating the clean check.
         run: uv build
 
-      - name: B4) Ensure built artifact version matches tag
-        shell: bash
-        run: |
-          set -e
-          TAG="${{ steps.ver.outputs.plain }}"
-          echo "Tag version: $TAG"
-          ls dist
-          if ! ls dist/*"$TAG"*.whl dist/*"$TAG"*.tar.gz >/dev/null 2>&1; then
-            echo "ERROR: Built artifact version does not match tag $TAG"
-            exit 1
-          fi
-          echo "Artifact version matches tag."
 
-      - name: B5) Confirm wheel contains runtime schema artifact
+      - name: B4) Ensure built artifact versions match tag
         shell: bash
+        env:
+          TAG_VERSION: ${{ steps.ver.outputs.plain }}
         run: |
-          set -e
+          set -euo pipefail
           python - <<'PY'
-          import pathlib
-          import zipfile
+          import os
+          from pathlib import Path
 
-          wheels = list(pathlib.Path("dist").glob("*.whl"))
-          assert wheels, "No wheel found"
+          version = os.environ["TAG_VERSION"]
+          wheels = list(Path("dist").glob("*.whl"))
+          sdists = list(Path("dist").glob("*.tar.gz"))
 
-          wheel = wheels[-1]
-          names = zipfile.ZipFile(wheel).namelist()
-          matches = [name for name in names if name.endswith("manifest-schema.toml")]
+          assert len(wheels) == 1, "Expected exactly one wheel"
+          assert len(sdists) == 1, "Expected exactly one sdist"
 
-          print(matches)
+          wheel_version = wheels[0].name.split("-")[1]
+          sdist_version = sdists[0].name.removesuffix(".tar.gz").rsplit("-", 1)[1]
 
-          assert (
-              "se_manifest_schema/manifest-schema.toml" in names
-          ), "Wheel is missing se_manifest_schema/manifest-schema.toml"
+          assert wheel_version == version, "Wheel version differs from tag"
+          assert sdist_version == version, "Sdist version differs from tag"
+
+          print(f"Tag version: {version}")
+          print(f"Wheel: {wheels[0].name}")
+          print(f"Sdist: {sdists[0].name}")
           PY
 
-      - name: B6) Sync dependencies after build
-        run: uv sync --extra dev --extra docs --upgrade
+      - name: B5) Install dependencies from committed lockfile
+        run: uv sync --locked
+        # REQ: Fail if uv.lock is missing or needs updating.
 
       # ============================================================
-      # E) Execute local cli commands for additional checks
+      # C) VALIDATE: Schema, manifest, and distribution artifacts
       # ============================================================
-      - name: E1) Validate schema internal consistency
-        run: uv run se-manifest validate-schema --strict
 
-      - name: E2) Validate repository manifest against schema
-        run: uv run se-manifest validate-manifest --strict
+      - name: C1) Confirm wheel contains runtime schema artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+
+          wheels = list(Path("dist").glob("*.whl"))
+          assert len(wheels) == 1, "Expected exactly one wheel"
+
+          expected = "se_manifest_schema/manifest-schema.toml"
+
+          with ZipFile(wheels[0]) as archive:
+              names = archive.namelist()
+
+          assert expected in names, (
+              f"Wheel is missing {expected}"
+          )
+
+          print(f"Verified: {expected}")
+          PY
+
+      - name: C2) Confirm sdist contains runtime schema artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          from tarfile import open as open_tar
+
+          sdists = list(Path("dist").glob("*.tar.gz"))
+          assert len(sdists) == 1, "Expected exactly one sdist"
+
+          expected = "se_manifest_schema/manifest-schema.toml"
+
+          with open_tar(sdists[0], "r:gz") as archive:
+              matches = [
+                  name
+                  for name in archive.getnames()
+                  if name.endswith("/" + expected)
+              ]
+
+          assert len(matches) == 1, (
+              f"Expected exactly one {expected} in sdist; "
+              f"found {matches}"
+          )
+
+          print(f"Verified sdist schema: {matches[0]}")
+          PY
+      - name: C3) Verify installed wheel can load runtime schema
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          TEST_ENV="$(mktemp -d)"
+          trap 'rm -rf "$TEST_ENV"' EXIT
+
+          uv venv --python "$(uv python find)" "$TEST_ENV/venv"
+
+          uv pip install \
+            --python "$TEST_ENV/venv/bin/python" \
+            --no-deps \
+            dist/*.whl
+
+          "$TEST_ENV/venv/bin/python" - <<'PY'
+          import tomllib
+          from importlib.resources import files
+
+          schema = (
+              files("se_manifest_schema")
+              .joinpath("manifest-schema.toml")
+          )
+
+          content = schema.read_bytes()
+          document = tomllib.loads(content.decode("utf-8"))
+
+          assert isinstance(document, dict)
+          assert document, "Installed schema is empty"
+
+          print("Installed wheel schema loaded successfully.")
+          PY
+
+      - name: C4) Validate schema internal consistency
+        run: uv run --locked se-manifest validate-schema --strict
+
+      - name: C5) Validate repository manifest against schema
+        run: uv run --locked se-manifest validate-manifest --strict
+
+      - name: C6) Validate built distributions
+        run: uvx twine check dist/*
+
+      # ============================================================
+      # D) DELIVER: Preserve validated release artifacts
+      # ============================================================
+
+      - name: D1) Upload built distribution artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: dist
+          path: dist/*
+          if-no-files-found: error

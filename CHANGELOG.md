@@ -13,6 +13,16 @@ and this project adheres to **[Semantic Versioning](https://semver.org/spec/v2.0
 
 ---
 
+## [0.5.1] - 2026-10-08
+
+### Changed
+
+- Updated `manifest-schema.toml` for new `se-protocols-{domain}` repos.
+- Updated to newer Python approach with `3.15` and `ty` and `prek`.
+- Updated release process and gh actions.
+
+---
+
 ## [0.5.0] - 2026-06-02
 
 This release tightens the public `SE_MANIFEST.toml` contract
@@ -232,11 +242,11 @@ force-include = {"manifest-schema.toml" = "se_manifest_schema/manifest-schema.to
 ## Notes on Versioning and Releases
 
 - We use **SemVer**:
-  - **MAJOR** - breaking changes to artifact structure or validation semantics
-  - **MINOR** - backward-compatible additions to schema or validation rules
+  - **MAJOR** - breaking changes
+  - **MINOR** - backward-compatible additions
   - **PATCH** - fixes, documentation, tooling
-- Versions are driven by git tags. Tag `vX.Y.Z` to release.
-- Docs are deployed per version tag and aliased to **latest**.
+- Versions are driven by git tags.
+- Tag `vX.Y.Z` to release.
 
 ## Release Procedure (Required)
 
@@ -252,8 +262,17 @@ Follow these steps exactly when creating a new release.
 ### Task 2. Validate
 
 ```shell
-uv sync --extra dev --extra docs --upgrade
-uvx pre-commit install
+# Update Python and run repository checks.
+.\sit.ps1
+
+# Update GitHub Actions and pin all action references to immutable SHAs.
+uvx gha-tools autoupdate --pin=all --write .github/workflows
+
+# Audit the resulting GitHub configuration for security findings.
+uvx zizmor@latest .github/
+# One informational is fine:
+# action functionality is already included by the runner
+#  --> .github\workflows\release-pypi.yml
 
 uv run se-manifest validate-role-capability-map
 uv run se-manifest validate-schema --strict
@@ -265,18 +284,9 @@ uv run se-manifest check-version
 uvx se-codeowners generate --strict --output .github/CODEOWNERS
 uvx se-codeowners check
 
-git add -A
-uvx pre-commit run --all-files
-uvx pre-commit run --all-files
-
-uv run python -m pyright
-uv run python -m pytest
-uv run python -m zensical build
-
 uv run python -c "import shutil; from pathlib import Path; shutil.rmtree(Path('dist'), ignore_errors=True)"
 
-uv run python -m build
-uv run python -m twine check dist/*
+uvx twine check dist/*
 
 uv run python -c "import pathlib, zipfile; wheels=list(pathlib.Path('dist').glob('*.whl')); assert wheels, 'No wheel found'; wheel=wheels[-1]; names=zipfile.ZipFile(wheel).namelist(); print([n for n in names if n.endswith('manifest-schema.toml')]); assert 'se_manifest_schema/manifest-schema.toml' in names"
 ```
@@ -314,7 +324,8 @@ git push origin :refs/tags/vX.Z.Y
 
 ## Links
 
-[Unreleased]: https://github.com/structural-explainability/se-manifest-schema/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/structural-explainability/se-manifest-schema/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.5.1
 [0.5.0]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.5.0
 [0.4.2]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.4.2
 [0.4.1]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.4.1

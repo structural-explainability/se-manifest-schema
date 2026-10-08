@@ -25,7 +25,7 @@ purpose = "Defines required sections, fields, and validation rules for SE_MANIFE
 schema = "se-manifest-schema"
 status = "active"
 title = "Structural Explainability Manifest Schema"
-version = "0.5.0"
+version = "0.5.1"
 
 [manifest]
 allowed_filenames = ["SE_MANIFEST.toml", "MANIFEST.toml"]
@@ -559,6 +559,7 @@ allowed_fields = [
 #   pilot
 #   policy
 #   profile
+#   protocols
 #   record_system
 #   regimes
 #   rules
@@ -987,6 +988,31 @@ required_sections = [
   "traceability",
 ]
 
+[class.protocols]
+forbidden_sections = ["contract", "exports"]
+optional_sections = ["validation", "naming", "governance", "compatibility"]
+required_compatibility_fields = []
+required_layer_roles = [
+  "research",
+  "review",
+  "audit",
+  "acceptance",
+  "construction",
+  "governance",
+  "verification",
+]
+required_repo_name_patterns = ["se-protocols-{domain}"]
+required_sections = [
+  "meta",
+  "repository",
+  "layer",
+  "depends",
+  "provides",
+  "scope",
+  "citation",
+  "traceability",
+]
+
 [class.record_system]
 forbidden_sections = ["exports"]
 optional_sections = ["compatibility"]
@@ -1109,7 +1135,7 @@ required_layer_roles = [
   "foundational-persistence-theory",
   "foundational-transformation-theory",
 ]
-required_repo_name_patterns = ["se-theory-{focus}"]
+required_repo_name_patterns = ["se-theory-{focus}", "se-protocols-{domain}"]
 required_sections = [
   "meta",
   "repository",

@@ -1,52 +1,60 @@
 # ============================================================
-# .github/workflows/links.yml (Lychee Link Checker)
+# .github/workflows/links.yml (ALL-REPOS)
 # ============================================================
-# Updated: 2026-04-13
-
-# WHY-FILE: Automated link checking.
-# OBS: Behavior is configured in lychee.toml in this repository.
-# OBS: Runs on pull requests and monthly on schedule; manual trigger always available.
+# Updated: 2026-09-25
+#
+# REQ: Repositories SHOULD verify links in project documentation and workflow files.
+# WHY: This workflow checks links throughout the repository and verifies that
+# referenced web pages and resources are still reachable.
+# WHY: Broken or outdated links make instructions, references, documentation,
+# and project resources harder to use and reproduce.
+# OBS: Lychee performs the link checks using the rules in .github/lychee.toml.
+# OBS: Runs for pull requests, monthly on schedule, and whenever started manually.
+# ALT: Link-checking behavior may be adjusted in .github/lychee.toml when external
+# sites require special handling for redirects, rate limits, or automated requests.
 
 name: Check Links
 
 on:
-  workflow_call: # WHY: Allow this workflow to be called by other workflows if needed
-  workflow_dispatch: # WHY: Manual trigger - always available
-  pull_request: # WHY: Validates PR links before merge
+  pull_request: # WHY: Verify changed repository links before merge.
   schedule:
-    - cron: "0 6 1 * *" # WHY: Runs monthly (1st of month)
+    - cron: "0 6 1 * *" # WHY: Recheck repository links monthly for external link decay.
+  workflow_call: # WHY: Allow this workflow to be called by other workflows if needed.
+  workflow_dispatch: # WHY: Allow a link check to be started manually at any time.
 
 concurrency:
-  # WHY: Prevent multiple simultaneous link checks on same ref
-  group: link-check-${{ github.ref || github.run_id }}
+  # WHY: Avoid duplicate link-checking runs for the same branch or reference.
+  group: links-${{ github.ref || github.run_id }}
   cancel-in-progress: true
 
 permissions:
-  contents: read # WHY: Needed to checkout code.
-
-env:
-  PYTHONUNBUFFERED: "1" # WHY: Real-time logging.
-  PYTHONIOENCODING: "utf-8" # WHY: Ensure UTF-8 encoding for international characters.
-  REPORT_PATH: "./lychee/out.md" # WHY: Predictable markdown report path for summary generation.
+  contents: read # WHY: Required to checkout repository files for link inspection.
 
 jobs:
   lychee:
     name: Link checks
-    runs-on: ubuntu-latest # WHY: Linux environment matches most production deployments
-    timeout-minutes: 20 # WHY: Prevent hanging jobs. If over time, likely stuck.
+    runs-on: ubuntu-latest # WHY: Stable Linux runner for repository link checking.
+    timeout-minutes: 10 # WHY: Prevent unreachable external sites from hanging CI.
 
     steps:
-      - name: 1) Checkout repository code
-        uses: actions/checkout@v7
-        # WHY: Required so Lychee can inspect repository files.
 
-      - name: 2) Run Lychee
-        uses: lycheeverse/lychee-action@v2.8.0
+      # === ASSEMBLE ===
+
+      - name: A1) Checkout repository code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+        # WHY: Make repository files available so their links can be inspected.
+
+      # === BASIC CHECKS ===
+
+      - name: B1) Check repository links
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2
+        # WHY: Find links in repository files and verify that their destinations
+        # are reachable according to the rules in .github/lychee.toml.
         with:
           args: >
             --config .github/lychee.toml
-            --verbose
-            --no-progress
             './**/*.md'
             './**/*.html'
             './**/*.yml'

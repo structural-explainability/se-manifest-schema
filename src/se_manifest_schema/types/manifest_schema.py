@@ -9,15 +9,15 @@ from typing import TypedDict
 from se_manifest_schema.types.primitives import ArtifactMeta
 
 __all__ = [
-    "ManifestSectionEntry",
-    "ManifestFieldEntry",
-    "ManifestClassEntry",
-    "ManifestTable",
     "ContractRolesTable",
-    "ValidationDefaultsTable",
     "ContractValidationTable",
-    "ValidationTable",
+    "ManifestClassEntry",
+    "ManifestFieldEntry",
     "ManifestSchemaData",
+    "ManifestSectionEntry",
+    "ManifestTable",
+    "ValidationDefaultsTable",
+    "ValidationTable",
 ]
 
 

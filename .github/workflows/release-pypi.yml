@@ -1,14 +1,21 @@
 # ============================================================
-# .github/workflows/release-pypi.yml
-# (Release PyPI + docs via Zensical)
+# .github/workflows/release-pypi.yml (ALL-PY-SRC-PYPI-REPOS)
 # ============================================================
-# WHY-FILE: Publish a tagged release to PyPI and deploy docs to GitHub Pages.
+# Updated: 2026-10-08
+#
+# WHY: Publish validated, tagged Python distributions to PyPI.
 # REQ: Trigger ONLY on version tags like v1.2.3.
 # REQ: PyPI project must be configured for Trusted Publishing (OIDC).
-# REQ: uv build must run before anything that modifies the working tree (including uv sync).
-# REQ: Repo Settings -> Pages -> Build and deployment -> Source: GitHub Actions
+# REQ: pre-release.yml must build, validate, and upload the dist artifact.
+#
+# OBS: Two jobs, deliberately separated:
+#      1) pre-release - validates and builds distributions once.
+#      2) publish     - downloads those exact distributions, creates
+#                       the GitHub Release, and publishes to PyPI.
+# OBS: Documentation deployment is handled by deploy-zensical.yml.
+# OBS: No rebuild or duplicate schema validation during publishing.
 
-name: Release (PyPI + Zensical docs)
+name: Release (PyPI)
 
 on:
   push:
@@ -16,117 +23,90 @@ on:
       - "v*.*.*"
 
 permissions:
-  contents: write   # WHY: Create GitHub Release.
-  pages: write      # WHY: Required to deploy to GitHub Pages.
-  id-token: write   # WHY: PyPI Trusted Publishing (OIDC) + deploy-pages OIDC.
+  contents: read # WHY: Use read-only permissions by default.
 
 env:
-  PYTHONUNBUFFERED: "1"       # WHY: Real-time logging.
-  PYTHONIOENCODING: "utf-8"   # WHY: Ensure UTF-8 encoding for international characters.
+  PYTHONUNBUFFERED: "1"     # WHY: Real-time logging.
+  PYTHONIOENCODING: "utf-8" # WHY: Consistent UTF-8 encoding.
 
 concurrency:
   group: release-${{ github.ref }}
-  cancel-in-progress: false  # WHY: Never cancel a release in progress.
+  cancel-in-progress: false
+  # WHY: Serialize releases per tag and never cancel an active release.
 
 jobs:
+  # ============================================================
+  # A) PRE-RELEASE: Validate and build distributions
+  # ============================================================
 
   pre-release:
-    uses: ./.github/workflows/pre-release.yml
+    uses: $/.github/workflows/pre-release.yml
 
-  build-and-release:
-    needs: pre-release  # WHY: Never publish if pre-release checks fail.
+  # ============================================================
+  # B) PUBLISH: Release the exact validated distributions
+  # ============================================================
+
+  publish:
+    needs: pre-release
     runs-on: ubuntu-latest
-    timeout-minutes: 30 # WHY: Prevent hanging jobs. If over, it is likely stuck.
-    environment: pypi  # WHY: Use 'pypi' environment for PyPI publishing; ignore warnings.
-    env:
-      PYTHON_VERSION: "3.14"
+    timeout-minutes: 30
+    environment: pypi
+
+    permissions:
+      contents: write # WHY: Create the GitHub Release.
+      id-token: write # WHY: PyPI Trusted Publishing (OIDC).
 
     steps:
-
-      # === ASSEMBLE ===
-
-      - name: A1) Checkout repository with full history and tags
-        uses: actions/checkout@v7
+      - name: B1) Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          fetch-depth: 0   # WHY: hatch-vcs needs full history to derive version from tags.
-          fetch-tags: true
-          ref: ${{ github.ref }}
+          persist-credentials: false
+        # WHY: Provides repository context for GitHub Release.
+        # OBS: No full history required; distributions are not rebuilt.
 
-      - name: A2) Configure GitHub Pages
-        uses: actions/configure-pages@v6
-
-      - name: A3) Install uv (with caching and uv.lock awareness)
-        uses: astral-sh/setup-uv@v7
+      - name: B2) Download validated distributions
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
-          enable-cache: true
-          cache-dependency-glob: "uv.lock"
+          name: dist
+          path: dist
+        # WHY: Use the exact distributions produced by pre-release.yml.
 
-      - name: A4) Install Python ${{ env.PYTHON_VERSION }}
-        run: uv python install ${{ env.PYTHON_VERSION }}
-
-      - name: A5) Display versions
-        run: |
-          uv --version
-          uv run python --version
-
-      # === BASELINE CHECKS (build while git is pristine) ===
-
-      - name: B1) Extract plain version from tag (no leading 'v')
-        id: ver
-        shell: bash
-        run: echo "plain=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
-
-      - name: B2) Verify git is clean before build
-        run: |
-          echo "Git status:"
-          git status --short
-          echo "Git describe:"
-          git describe --tags --always --dirty
-          if [[ $(git status --porcelain) ]]; then
-            echo "ERROR: Git tree is dirty before build!"
-            exit 1
-          fi
-
-      - name: B3) Build sdist + wheel
-        run: uv build
-
-      - name: B4) Ensure built artifact version matches tag
+      - name: B3) Verify downloaded artifact versions match tag
         shell: bash
         run: |
-          set -e
-          TAG="${{ steps.ver.outputs.plain }}"
-          echo "Tag version: $TAG"
-          ls dist
-          if ! ls dist/*"$TAG"*.whl dist/*"$TAG"*.tar.gz >/dev/null 2>&1; then
-            echo "ERROR: Built artifact version does not match tag $TAG"
-            exit 1
-          fi
-          echo "Artifact version matches tag."
+          set -euo pipefail
+          python - <<'PY'
+          import os
+          from pathlib import Path
 
-      # === CHECKS (after build, may modify working tree) ===
+          tag = os.environ["GITHUB_REF_NAME"]
 
-      - name: C1) Sync to install all dependencies
-        run: uv sync --extra dev --extra docs --upgrade
+          assert tag.startswith("v"), "Expected version tag"
+          version = tag[1:]
 
-      - name: C2) Ruff format (check only)
-        run: uv run ruff format --check .
+          wheels = list(Path("dist").glob("*.whl"))
+          sdists = list(Path("dist").glob("*.tar.gz"))
 
-      - name: C3) Ruff lint (no fixes)
-        run: uv run ruff check .
+          assert len(wheels) == 1, "Expected exactly one wheel"
+          assert len(sdists) == 1, "Expected exactly one sdist"
 
-      - name: C4) Validate pyproject.toml
-        run: uvx validate-pyproject
+          wheel_version = wheels[0].name.split("-")[1]
+          sdist_version = (
+              sdists[0].name.removesuffix(".tar.gz").rsplit("-", 1)[1]
+          )
 
-      - name: C5) Pyright (type check)
-        run: uv run pyright
+          assert wheel_version == version, "Wheel version mismatch"
+          assert sdist_version == version, "Sdist version mismatch"
 
-      - name: C6) Validate built artifacts
-        run: uv run twine check dist/*
+          print(f"Verified release version: {version}")
+          print(f"Wheel: {wheels[0].name}")
+          print(f"Sdist: {sdists[0].name}")
+          PY
+        # WHY: Confirm both downloaded distributions match the release tag.
+        # OBS: No rebuild or modification of the distributions.
 
-      # === DEPLOY RELEASE AND DOCS ===
-
-      - name: D1) Create GitHub Release and upload artifacts
-        uses: softprops/action-gh-release@v3
+      - name: B4) Create GitHub Release and upload artifacts
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3
         with:
           tag_name: ${{ github.ref_name }}
           name: ${{ github.ref_name }}
@@ -134,34 +114,13 @@ jobs:
           files: |
             dist/*.whl
             dist/*.tar.gz
+          fail_on_unmatched_files: true
           draft: false
           prerelease: false
           make_latest: true
+        # WHY: Publish the validated distributions as GitHub Release assets.
 
-      - name: D2) Publish to PyPI (Trusted Publishing)
-        uses: pypa/gh-action-pypi-publish@release/v1
-
-      - name: D3) Build docs with Zensical
-        run: |
-          if [ ! -f "zensical.toml" ]; then
-            echo "zensical.toml not found; skipping docs deploy." >> "$GITHUB_STEP_SUMMARY"
-            exit 0
-          fi
-          uv run zensical build
-
-      - name: D4) Verify site output exists
-        run: |
-          if [ ! -d "site" ]; then
-            echo "## Documentation build output missing" >> "$GITHUB_STEP_SUMMARY"
-            echo "Expected directory 'site/' was not created." >> "$GITHUB_STEP_SUMMARY"
-            echo "Check the Zensical build step and zensical.toml configuration." >> "$GITHUB_STEP_SUMMARY"
-            exit 1
-          fi
-
-      - name: D5) Upload Pages artifact
-        uses: actions/upload-pages-artifact@v5
-        with:
-          path: site
-
-      - name: D6) Deploy to GitHub Pages
-        uses: actions/deploy-pages@v5
+      - name: B5) Publish to PyPI with Trusted Publishing
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+        # WHY: Publish validated distributions using PyPI OIDC.
+        # OBS: Uploads dist/* without rebuilding.

@@ -24,5 +24,5 @@ def run(*, require_tag: bool = False) -> int:
     try:
         return check_version_run(require_tag=require_tag)
     except (FileNotFoundError, ValueError, RuntimeError) as exc:
-        print(f"ERROR: {exc}")  # noqa: T201
+        print(f"ERROR: {exc}")
         return 1

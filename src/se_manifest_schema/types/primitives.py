@@ -2,7 +2,7 @@
 
 from typing import Any, TypedDict
 
-__all__ = ["TomlData", "ArtifactName", "ArtifactCollection", "ArtifactMeta"]
+__all__ = ["ArtifactCollection", "ArtifactMeta", "ArtifactName", "TomlData"]
 
 # WHY: One parsed TOML document is the broad boundary type returned by loaders.
 # WHY: Keep this reusable and artifact-agnostic.

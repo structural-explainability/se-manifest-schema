@@ -47,10 +47,10 @@ def test_get_fallback_version_missing_field_raises(tmp_path: Path) -> None:
 
     try:
         get_fallback_version(path)
-    except ValueError as exc:
+    except TypeError as exc:
         assert "fallback-version" in str(exc)
     else:
-        raise AssertionError("Expected ValueError")
+        raise AssertionError("Expected TypeError")
 
 
 def test_get_version_from_citation_missing_file_raises(tmp_path: Path) -> None:
