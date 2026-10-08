@@ -141,7 +141,7 @@ jobs:
           print(f"Verified: {expected}")
           PY
 
-      - name: C2) Confirm sdist contains runtime schema artifact
+      - name: C2) Confirm sdist contains runtime schema source
         shell: bash
         run: |
           set -euo pipefail
@@ -152,22 +152,24 @@ jobs:
           sdists = list(Path("dist").glob("*.tar.gz"))
           assert len(sdists) == 1, "Expected exactly one sdist"
 
-          expected = "se_manifest_schema/manifest-schema.toml"
+          expected = "manifest-schema.toml"
 
           with open_tar(sdists[0], "r:gz") as archive:
               matches = [
                   name
                   for name in archive.getnames()
-                  if name.endswith("/" + expected)
+                  if name.count("/") == 1
+                  and name.endswith("/" + expected)
               ]
 
           assert len(matches) == 1, (
-              f"Expected exactly one {expected} in sdist; "
+              f"Expected exactly one root-level {expected} in sdist; "
               f"found {matches}"
           )
 
-          print(f"Verified sdist schema: {matches[0]}")
+          print(f"Verified sdist schema source: {matches[0]}")
           PY
+
       - name: C3) Verify installed wheel can load runtime schema
         shell: bash
         run: |
@@ -215,7 +217,7 @@ jobs:
       # ============================================================
 
       - name: D1) Upload built distribution artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: dist
           path: dist/*

@@ -1,163 +1,169 @@
 #Requires -Version 7.0
 
 <#
-Run the release validation sequence.
-
-The script echoes each exact command before running it.
+rel.ps1 - Local release validation for se-manifest-schema.
+Run .\sit.ps1 separately first. This script does not publish or create tags.
+It checks release metadata, package contents, and wheel installation.
 #>
 
-Clear-Host
-
 Set-StrictMode -Version Latest
-$ErrorActionPreference = "Stop"
-# $PSNativeCommandUseErrorActionPreference = $true
+$ErrorActionPreference = 'Stop'
 
-
-function Invoke-Step {
+function Invoke-ReleaseStep {
     param(
-        [Parameter(Mandatory = $true)]
-        [string]$Section,
-
-        [Parameter(Mandatory = $true)]
-        [string]$Command,
-
-        [Parameter(Mandatory = $true)]
-        [scriptblock]$Script
+        [Parameter(Mandatory)] [string]$Name,
+        [Parameter(Mandatory)] [scriptblock]$Action
     )
 
-    Write-Host ""
-    Write-Host "============================================================"
-    Write-Host $Section
-    Write-Host "============================================================"
-    Write-Host $Command
-    & $Script
-}
-
-# ============================================================
-# A) Toolchain refresh
-# ============================================================
-
-Invoke-Step "A1) Sync Python tooling" "uv sync --extra dev --extra docs --upgrade" {
-    uv sync --extra dev --extra docs --upgrade
-}
-
-Invoke-Step "A2) Install pre-commit hooks" "uvx pre-commit install" {
-    uvx pre-commit install
-}
-
-# ============================================================
-# C) Package command surface and manifest validation
-# ============================================================
-
-Invoke-Step "C1) Validate role capability map" "uv run se-manifest-schema validate-role-capability-map" {
-    uv run se-manifest-schema validate-role-capability-map
-}
-
-# Invoke-Step "C2) Verify manifest dependency graph" "uv run se-manifest-schema verify-graph" {
-#     uv run se-manifest-schema verify-graph
-# }
-
-Invoke-Step "C3) Validate manifest schema" "uv run se-manifest validate-schema --strict" {
-    uv run se-manifest validate-schema --strict
-}
-
-Invoke-Step "C4) Validate SE manifests" "uv run se-manifest validate-manifest --strict" {
-    uv run se-manifest validate-manifest --strict
-}
-
-Invoke-Step "C5) Check version metadata" "uv run se-manifest check-version" {
-    uv run se-manifest check-version
-}
-
-Invoke-Step "C6) Generate CODEOWNERS file" "uvx se-codeowners generate --strict --output .github/CODEOWNERS" {
-    uvx se-codeowners generate --strict --output .github/CODEOWNERS
-}
-
-Invoke-Step "C7) Confirm current CODEOWNERS" "uvx se-codeowners check" {
-    uvx se-codeowners check
-}
-
-
-# ============================================================
-# D) Pre-commit and Python tests
-# ============================================================
-
-Invoke-Step "D1) Stage all changes so pre-commit sees tracked/staged files" "git add -A" {
-    git add -A
-}
-
-Invoke-Step "D2) Run pre-commit autofix pass" "uvx pre-commit run --all-files" {
-    $oldNativePreference = $PSNativeCommandUseErrorActionPreference
-    $PSNativeCommandUseErrorActionPreference = $false
-
-    uvx pre-commit run --all-files
-    $exitCode = $LASTEXITCODE
-
-    $PSNativeCommandUseErrorActionPreference = $oldNativePreference
-
-    if ($exitCode -ne 0) {
-        Write-Host ""
-        Write-Host "Pre-commit may have modified files. Staging changes and continuing to verification pass."
-        git add -A
+    Write-Host "`n============================================================"
+    Write-Host $Name
+    Write-Host '============================================================'
+    & $Action
+    if ($LASTEXITCODE -ne 0) {
+        throw "$Name failed (exit code $LASTEXITCODE)."
     }
 }
 
-Invoke-Step "D3) Run pre-commit verification pass" "uvx pre-commit run --all-files" {
-    uvx pre-commit run --all-files
+function Assert-NativeSuccess {
+    param([Parameter(Mandatory)] [string]$Description)
+    if ($LASTEXITCODE -ne 0) {
+        throw "$Description failed (exit code $LASTEXITCODE)."
+    }
 }
 
-Invoke-Step "D4) Run Python tests" "uv run python -m pytest" {
-    uv run python -m pytest
+# A) Release-specific repository checks (not repeated from sit.ps1).
+Invoke-ReleaseStep 'A1) Update and pin GitHub Actions' {
+    uvx gha-tools autoupdate --pin=all --write .github/workflows
+}
+# A2) Audit GitHub Actions
+uvx zizmor@latest .github/
+
+if ($LASTEXITCODE -notin @(0, 11)) {
+    throw "A2) Audit GitHub Actions failed (exit code $LASTEXITCODE)."
+}
+Invoke-ReleaseStep 'A3) Verify committed lockfile' {
+    uv sync --locked
+}
+Invoke-ReleaseStep 'A4) Validate role-capability map' {
+    uv run --locked se-manifest validate-role-capability-map
+}
+Invoke-ReleaseStep 'A5) Validate manifest schema' {
+    uv run --locked se-manifest validate-schema --strict
+}
+Invoke-ReleaseStep 'A6) Validate repository manifest' {
+    uv run --locked se-manifest validate-manifest --strict
+}
+Invoke-ReleaseStep 'A7) Check canonical version metadata' {
+    uv run --locked se-manifest check-version
+}
+# verify-graph is intentionally not a release gate.
+Invoke-ReleaseStep 'A8) Generate CODEOWNERS' {
+    uvx se-codeowners generate --strict --output .github/CODEOWNERS
+}
+Invoke-ReleaseStep 'A9) Check CODEOWNERS' {
+    uvx se-codeowners check
 }
 
-Invoke-Step "D5) Run Pyright" "uv run python -m pyright" {
-    uv run python -m pyright
+# B) Additional local reports retained from the previous rel.ps1.
+# B1) Check for dead code (advisory)
+uvx vulture src/se_manifest_schema --min-confidence 60
+
+if ($LASTEXITCODE -notin @(0, 3)) {
+    throw "B1) Check for dead code failed (exit code $LASTEXITCODE)."
 }
-
-Invoke-Step "D6) Run final pre-commit check after tests/type checks" "uvx pre-commit run --all-files" {
-    uvx pre-commit run --all-files
-}
-
-# ============================================================
-# E) Documentation
-# ============================================================
-
-Invoke-Step "E1) Build documentation" "uv run python -m zensical build" {
-    uv run python -m zensical build
-}
-
-# ============================================================
-# F) Architectural and code-health checks
-# ============================================================
-
-# Invoke-Step "F0) check import layers" "uvx --python 3.13 --from import-linter lint-imports --config .github/.importlinter" {
-#     uvx --python 3.13 --from import-linter lint-imports --config .github/.importlinter
-# }
-Invoke-Step "F1) Find dead code" "uvx --with-editable . vulture src/se_manifest_schema" {
-    uvx --with-editable . vulture src/se_manifest_schema
-}
-
-Invoke-Step "F2) Check complexity; any output means C-or-worse complexity exists" "uvx radon cc src/se_manifest_schema -s -a -n C" {
+Invoke-ReleaseStep 'B2) Report C-or-worse complexity' {
     uvx radon cc src/se_manifest_schema -s -a -n C
 }
-
-Invoke-Step "F3) Report raw code metrics" "uvx radon raw src/se_manifest_schema -j | uv run python -c `"import json, sys; data=json.load(sys.stdin); keys=('loc','lloc','sloc','comments','multi','blank','single_comments'); totals={k:sum(file[k] for file in data.values()) for k in keys}; print('\n'.join(f'{k.upper()}: {v}' for k,v in totals.items()))`"" {
-    uvx radon raw src/se_manifest_schema -j | uv run python -c "import json, sys; data=json.load(sys.stdin); keys=('loc','lloc','sloc','comments','multi','blank','single_comments'); totals={k:sum(file[k] for file in data.values()) for k in keys}; print('\n'.join(f'{k.upper()}: {v}' for k,v in totals.items()))"
+Invoke-ReleaseStep 'B3) Report raw code metrics' {
+    # uvx radon raw src/se_manifest_schema
 }
 
-# ============================================================
-# G) Distribution artifacts
-# ============================================================
+# C) Build clean distributions. Do not stage, commit, or tag changes.
+Write-Host "`n============================================================"
+Write-Host 'C1) Remove old distributions'
+Write-Host '============================================================'
+Remove-Item -LiteralPath 'dist' -Recurse -Force -ErrorAction SilentlyContinue
 
-Invoke-Step "G1) Build source and wheel distributions" "uv build" {
+Invoke-ReleaseStep 'C2) Build wheel and source distribution' {
     uv build
 }
 
-Invoke-Step "G2) Check distribution metadata" "uvx twine check dist/*" {
-    uvx twine check dist/*
+# D) Inspect the same artifact locations checked in Linux pre-release CI.
+$artifactCheck = @'
+from pathlib import Path
+from tarfile import open as open_tar
+from zipfile import ZipFile
+wheels = list(Path("dist").glob("*.whl"))
+sdists = list(Path("dist").glob("*.tar.gz"))
+assert len(wheels) == 1, f"Expected one wheel, found {len(wheels)}"
+assert len(sdists) == 1, f"Expected one sdist, found {len(sdists)}"
+wheel_version = wheels[0].name.split("-")[1]
+sdist_version = sdists[0].name.removesuffix(".tar.gz").rsplit("-", 1)[1]
+assert wheel_version == sdist_version, "Wheel and sdist versions differ"
+
+with ZipFile(wheels[0]) as archive:
+    expected = "se_manifest_schema/manifest-schema.toml"
+    assert expected in archive.namelist(), f"Wheel missing {expected}"
+
+with open_tar(sdists[0], "r:gz") as archive:
+    matches = [
+        name for name in archive.getnames()
+        if name.count("/") == 1 and name.endswith("/manifest-schema.toml")
+    ]
+    assert len(matches) == 1, f"Expected root-level schema in sdist; found {matches}"
+
+print(f"Wheel: {wheels[0].name}")
+print(f"Sdist: {sdists[0].name}")
+print(f"Matching artifact version: {wheel_version}")
+print("Artifact versions and schema locations verified.")
+'@
+
+Write-Host "`n============================================================"
+Write-Host 'D1) Check artifact versions and schema contents'
+Write-Host '============================================================'
+$artifactCheck | uv run --locked python -
+Assert-NativeSuccess 'Artifact inspection'
+
+Invoke-ReleaseStep 'D2) Check distribution metadata with Twine' {
+    $artifacts = @(Get-ChildItem -LiteralPath 'dist' -File |
+        Where-Object { $_.Name -match '\.(whl|tar\.gz)$' } |
+        Select-Object -ExpandProperty FullName)
+    if ($artifacts.Count -ne 2) {
+        throw "Expected two distributions; found $($artifacts.Count)."
+    }
+    uvx twine check @artifacts
 }
 
-Write-Host ""
-Write-Host "============================================================"
-Write-Host "Release validation completed successfully."
-Write-Host "============================================================"
+# E) Verify schema accessibility from the installed wheel, not the src checkout.
+Write-Host "`n============================================================"
+Write-Host 'E1) Install wheel in isolated environment and load schema'
+Write-Host '============================================================'
+$testEnv = Join-Path ([System.IO.Path]::GetTempPath()) ("se-manifest-wheel-" + [guid]::NewGuid().ToString('N'))
+try {
+    $interpreter = (uv python find | Select-Object -First 1).Trim()
+    Assert-NativeSuccess 'Find Python interpreter'
+    uv venv --python $interpreter $testEnv
+    Assert-NativeSuccess 'Create isolated environment'
+
+    $testPython = Join-Path $testEnv 'Scripts/python.exe'
+    $wheel = (Get-ChildItem -LiteralPath 'dist' -Filter '*.whl' -File | Select-Object -First 1).FullName
+    uv pip install --python $testPython --no-deps $wheel
+    Assert-NativeSuccess 'Install built wheel'
+
+    $installedCheck = @'
+import tomllib
+from importlib.resources import files
+
+schema = files("se_manifest_schema").joinpath("manifest-schema.toml")
+document = tomllib.loads(schema.read_text(encoding="utf-8"))
+assert document, "Installed schema is empty"
+print("Installed wheel schema loaded and parsed successfully.")
+'@
+    $installedCheck | & $testPython -
+    Assert-NativeSuccess 'Installed wheel schema test'
+}
+finally {
+    Remove-Item -LiteralPath $testEnv -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+Write-Host "`nRelease validation completed successfully. No release was published."

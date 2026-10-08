@@ -284,11 +284,8 @@ uv run se-manifest check-version
 uvx se-codeowners generate --strict --output .github/CODEOWNERS
 uvx se-codeowners check
 
-uv run python -c "import shutil; from pathlib import Path; shutil.rmtree(Path('dist'), ignore_errors=True)"
-
-uvx twine check dist/*
-
-uv run python -c "import pathlib, zipfile; wheels=list(pathlib.Path('dist').glob('*.whl')); assert wheels, 'No wheel found'; wheel=wheels[-1]; names=zipfile.ZipFile(wheel).namelist(); print([n for n in names if n.endswith('manifest-schema.toml')]); assert 'se_manifest_schema/manifest-schema.toml' in names"
+.\rel.ps1
+.\sit.ps1
 ```
 
 ### Task 4. Commit, push, tag
