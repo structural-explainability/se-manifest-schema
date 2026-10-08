@@ -16,19 +16,17 @@ def run(*, strict: bool = False) -> int:
 
     schema_path = repo_root_schema_path()
     if schema_path is None:
-        print(  # noqa: T201
-            "[validate-schema] ERROR: manifest-schema.toml source file not found."
-        )
+        print("[validate-schema] ERROR: manifest-schema.toml source file not found.")
         return 1
 
     schema = cast(ManifestSchemaData, load_toml(Path(schema_path)))
     errors = validate_schema_internal(schema)
 
     if errors:
-        print("[validate-schema] FAILED")  # noqa: T201
+        print("[validate-schema] FAILED")
         for error in errors:
-            print(f"- {error}")  # noqa: T201
+            print(f"- {error}")
         return 1
 
-    print("[validate-schema] OK")  # noqa: T201
+    print("[validate-schema] OK")
     return 0

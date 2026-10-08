@@ -25,8 +25,8 @@ import tomllib
 from se_manifest_schema.load import get_git_tag
 
 __all__ = [
-    "get_version_from_citation",
     "get_fallback_version",
+    "get_version_from_citation",
     "run",
 ]
 
@@ -54,7 +54,7 @@ def get_fallback_version(path: Path | None = None) -> str:
 
     Raises:
         FileNotFoundError: If pyproject.toml does not exist.
-        ValueError: If fallback-version is missing or not a string.
+        TypeError: If fallback-version is missing or not a string.
     """
     target = path if path is not None else Path("pyproject.toml")
     if not target.is_file():
@@ -65,7 +65,7 @@ def get_fallback_version(path: Path | None = None) -> str:
         data.get("tool", {}).get("hatch", {}).get("version", {}).get("fallback-version")
     )
     if not isinstance(version, str):
-        raise ValueError("pyproject.toml missing [tool.hatch.version] fallback-version")
+        raise TypeError("pyproject.toml missing [tool.hatch.version] fallback-version")
     return version
 
 
@@ -119,26 +119,26 @@ def run(*, require_tag: bool = False) -> int:
 
     if require_tag:
         tag = get_git_tag()
-        normalized = tag[1:] if tag.startswith("v") else tag
+        normalized = tag.removeprefix("v")
         if normalized != canonical:
             failures.append(f"git tag {tag!r} != CITATION.cff version {canonical!r}")
 
     if failures:
         for message in failures:
-            print(f"[check-version] MISMATCH: {message}")  # noqa: T201
-        print(  # noqa: T201
+            print(f"[check-version] MISMATCH: {message}")
+        print(
             "[check-version] CITATION.cff is the source of truth; "
             "update the others to match."
         )
         return EXIT_MISMATCH
 
     if require_tag:
-        print(  # noqa: T201
+        print(
             "[check-version] OK: CITATION.cff, pyproject.toml, "
             f"and git tag agree at {canonical}"
         )
     else:
-        print(  # noqa: T201
+        print(
             f"[check-version] OK: CITATION.cff and pyproject.toml agree at {canonical}"
         )
 

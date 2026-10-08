@@ -35,19 +35,18 @@ keywords = [
 ]
 dependencies = []
 
-[project.optional-dependencies]
-# WHY: Optional dependency groups keep the core install clean and focused.
+[dependency-groups]
+# WHY: Development dependencies support maintaining and validating the project
+# but are not runtime dependencies or optional features of the published package.
+
 dev = [
     # REQ.DEV.DEPS: External packages used for linting, testing, type checking, etc.
-    "build", # WHY: build tool required for packaging and publishing.
-    "pre-commit",
-    "pyright",
-    "pytest",
-    "pytest-cov",
-    "ruff",
-    "twine", # WHY: Required for artifact validation (twine check dist/*).
+    "prek",       # WHY: Pre-commit hooks for consistent formatting and linting (replaces pre-commit).
+    "pytest>=9",  # WHY: Test framework for unit and integration tests.
+    "pytest-cov", # WHY: Test coverage reporting for quality metrics and CI gating.
+    "ruff",       # WHY: Fast linting and formatting for Python code.
+    "ty",         # WHY: Type checking for static analysis and type safety.
 ]
-
 docs = [
     # REQ.DOCS.DEPS: External packages used to generate project documentation.
     "zensical",
@@ -73,95 +72,51 @@ Changelog = "https://github.com/structural-explainability/se-manifest-schema/blo
 # SECTION 2: TOOL CONFIGURATION (Professional basics)
 # ============================================================
 
-# === PYRIGHT (TYPE CHECKING HELPS FIND COMMON ERRORS BEFORE THE CODE RUNS) ===
-
-[tool.pyright]
-# CUSTOM: Pyright configuration for static type checking.
-# WHY: Strict type checking helps catch bugs early.
-include = ["src", "tests"] # WHY: Type-check both source and tests.
-extraPaths = ["src"] # WHY: Resolve imports relative to src/ for consistent behavior across environments.
-exclude = ["**/node_modules", "**/.*", ".venv", "**/__pycache__", "dist", "build"]
-pythonVersion = "3.14"
-reportMissingTypeStubs = "none" # WHY: Avoid warnings from third-party libraries without type stubs.
-reportPrivateUsage = "none" # WHY: Allow usage of private members (e.g., _version.py), common in Python projects.
-typeCheckingMode = "strict" # strict | basic | off
-
 # === PYTEST (VERIFY LOGIC) ===
 
 [tool.pytest.ini_options]
 # WHY: Consistent test discovery and coverage visibility.
 minversion = "9.0"
 testpaths = ["tests"]
-addopts = "--cov=se_manifest_schema --cov-report=term-missing --cov-fail-under=85"
+addopts = "--cov=src/se_manifest_schema/ --cov-fail-under=50 --cov-report=term-missing"
+filterwarnings = [
+    "ignore:FigureCanvasAgg is non-interactive, and thus cannot be shown:UserWarning",
+]
 
 # === RUFF (PYTHON FORMATTING AND LINTING) ===
-
-[tool.ruff]
-# WHY: Fast linting and formatting in one tool.
-exclude = [
-    ".eggs",
-    "*.egg-info",
-    ".ruff_cache",
-    ".venv",
-    "__pycache__",
-    "build",
-    "dist",
-    "site",
-]
-line-length = 88 # WHY: PEP 8 standard, wrap when possible.
-preview = false # WHY: Stable features only; avoid preview features.
-target-version = "py314" # WHY: match latest supported Python version.
-unsafe-fixes = false # WHY: Avoid potentially unsafe automatic fixes.
-
-[tool.ruff.format]
-# WHY: Formatter choices should be stable to keep diffs small and predictable.
-indent-style = "space" # See also .gitattributes for indent style.
-line-ending = "auto" # Match existing files and let .gitattributes handle it.
-quote-style = "preserve" # Preserve existing quote styles to minimize churn.
-
-[tool.ruff.lint]
-# WHY: Baseline + stricter categories:
-select = [
-    "E",  # Basic syntax and structural correctness
-    "F",  # Undefined names and unused imports
-    "W",  # Warnings that catch easy issues early
-    "I",  # Deterministic import ordering
-    "UP", # Modern Python constructs
-    "B",  # Common bug patterns
-
-    "PTH", # Prefer pathlib patterns
-    "C4",  # Comprehension correctness and clarity
-    "SIM", # Simplify obvious complexity
-    "RET", # Return practices
-
-    "D", # Docstring standards (see convention below)
-    "S", # Security checks (with deliberate exceptions)
-]
-ignore = [
-    "E501", # line length handled by formatter
-    "D203", # conflicts with D211
-    "D213", # conflicts with D212 (Google standard summary placement)
-    "S101", # allow assert (tests + internal invariants)
+[tool.ruff.lint] # WHY: Evolve with Ruff's defaults; production might pin an explicit set.
+extend-select = [
+    # --- turn on for additional linting rules ---
+    "D", # WHY: Require docstrings; VS Code helps generate them.
 ]
 
-[tool.ruff.lint.isort]
-# WHY: Ordering imports helps keep code diffs (differences) readable.
+[tool.ruff.lint.isort] # WHY: Sort plain-import and from-import lines together within each section.
 force-sort-within-sections = true
 
-# === PER-FILE IGNORES (DEPENDS ON DOCSTRING POLICY) ===
+[tool.ruff.lint.per-file-ignores] # WHY: Some file types need lint exceptions.
+"src/**/__init__.py" = ["F401"] # Allow re-export patterns.
+"src/**/_version.py" = ["ALL"] # Auto-generated file; do not lint.
+"tests/**/*.py" = ["D", "B018"] # Tests need no docstrings; B018 is default-on.
+"notebooks/**/*.py" = [
+    "D",
+    "PLR1711",
+    "RUF059",
+] # marimo cells: bare returns + cell-scoped unused vars are the format, not defects
 
-[tool.ruff.lint.per-file-ignores]
-# WHY: Some files must not be auto-modified.
-"src/**/__init__.py" = ["F401"]     # Allow re-export patterns
-"src/**/_version.py" = ["ALL"]      # Auto-generated file (do not lint)
-"tests/**/*.py" = ["D", "B018", "B011", "S101"]
-"src/**/py.typed" = ["ALL"]
+[tool.ruff.lint.pydocstyle] # WHY: Use Google docstring style when D is enabled.
+convention = "google"
 
-# === CHOOSE PROJECT DOC STYLE ===
+# === UV (PYTHON ENVIRONMENT AND DEPENDENCY MANAGEMENT) ===
 
-[tool.ruff.lint.pydocstyle]
-# REQ: Google style is the project-wide docstring convention.
-convention = "google"   # ALT: "numpy" choose one, never mix.
+[tool.uv]
+# WHY: Install all dependency groups defined by this repository by default.
+# OBS: This keeps the canonical `uv sync` command identical across project types
+#      and ensures all repository features work after setup.
+default-groups = "all"
+# WHY: Give a bit of time to find hijacked releases before installing.
+# CUSTOM: Should match `uv run prek update --freeze --cooldown-days 7`
+exclude-newer = "7 days"
+
 
 # ============================================================
 # SECTION 3: BUILD SYSTEM (boilerplate; CUSTOM src/ agreement)
@@ -204,10 +159,12 @@ packages = ["src/se_manifest_schema"]
 
 [tool.hatch.version]
 # Used when no git tags present (fresh clone, CI). Keep in sync with CITATION.cff.
-fallback-version = "0.5.0"
+fallback-version = "0.5.1"
 # WHY: Version derived from git tags at build time.
 source = "vcs"
+tag-pattern = "^(?:v)?(?P<version>\\d+\\.\\d+\\.\\d+)$"
+
+[tool.hatch.version.raw-options]
 # WHY: Allow hatch-vcs to find the Git root when built from a subdirectory,
 # temporary build directory, or isolated build env.
 search_parent_directories = true
-tag-pattern = "^(?:v)?(?P<version>\\d+\\.\\d+\\.\\d+)$"

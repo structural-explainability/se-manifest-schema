@@ -5,7 +5,7 @@ from pathlib import Path
 import tomllib
 from typing import Any, cast
 
-__all__ = ["validate_role_capability_map_file", "validate_role_capability_map_data"]
+__all__ = ["validate_role_capability_map_data", "validate_role_capability_map_file"]
 
 REQUIRED_ROLE_CAPABILITY_MAP_SECTIONS = {
     "schema",

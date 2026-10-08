@@ -30,12 +30,12 @@ def test_get_git_tag_not_found() -> None:
 
 
 def test_get_repo_version_missing_repo() -> None:
-    with pytest.raises(ValueError, match="repository"):
+    with pytest.raises(TypeError, match="repository"):
         get_repo_version({})
 
 
 def test_get_repo_version_missing_version() -> None:
-    with pytest.raises(ValueError, match="version"):
+    with pytest.raises(TypeError, match="version"):
         get_repo_version({"repository": {"name": "x"}})
 
 

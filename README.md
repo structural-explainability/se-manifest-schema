@@ -33,6 +33,19 @@ The schema is maintained in:
 uvx se-manifest-schema validate-manifest --path SE_MANIFEST.toml --strict
 ```
 
+## Todo: 2026 October Additions From Theory Update
+
+Add `se-protocols-<domain>`, e.g. se-protocols-research
+
+Add to theory repos and consumers:
+
+- owns
+- assumes
+- defines
+- requires
+- derives
+- does not claim
+
 ## Developer Command Reference
 
 <details>

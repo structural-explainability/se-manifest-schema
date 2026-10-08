@@ -219,7 +219,7 @@ required = ["ghost-repo"]
 
     schema_path = tmp_path / "manifest-schema.toml"
     schema_path.write_text(
-        "[class.core]\nrequired_sections = [\"repo\"]\n", encoding="utf-8"
+        '[class.core]\nrequired_sections = ["repo"]\n', encoding="utf-8"
     )
     report_path = tmp_path / "report.md"
 

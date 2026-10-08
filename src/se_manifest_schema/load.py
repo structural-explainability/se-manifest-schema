@@ -54,7 +54,7 @@ def get_git_tag() -> str:
         raise RuntimeError("git executable not found on PATH")
     try:
         return (
-            subprocess.check_output(  # noqa: S603
+            subprocess.check_output(
                 [git, "describe", "--tags", "--exact-match"],
                 stderr=subprocess.DEVNULL,
             )
@@ -70,13 +70,13 @@ def get_repo_version(manifest: dict[str, Any]) -> str:
     repo: Any = manifest.get("repository")
 
     if not isinstance(repo, dict):
-        raise ValueError("Manifest missing 'repository' section")
+        raise TypeError("Manifest missing 'repository' section")
 
     repo_typed: dict[str, Any] = repo  # type: ignore[assignment]
     version: Any = repo_typed.get("version")
 
     if not isinstance(version, str):
-        raise ValueError("Manifest 'repository' section missing 'version' string")
+        raise TypeError("Manifest 'repository' section missing 'version' string")
 
     return version
 
