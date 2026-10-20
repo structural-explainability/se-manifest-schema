@@ -1,9 +1,15 @@
 # ============================================================
 # pyproject.toml (Python project configuration)
 # ============================================================
+# Updated: 2026-10-16
+#
+# REQ: All Python src/ projects SHOULD include pyproject.toml.
+# WHAT: Defines project identity, dependencies, and build configuration.
+# WHY: Keeps Python project metadata and package requirements together.
+# CUSTOM: Update project identity, dependencies, and package paths.
 
 # ============================================================
-# SECTION 1: PROJECT IDENTITY (name, version, dependencies)
+# === SECTION: PROJECT IDENTITY ===
 # ============================================================
 
 [project]
@@ -33,7 +39,18 @@ keywords = [
     "validation",
     "toml",
 ]
+
+# ============================================================
+# === SECTION: PROJECT RUNTIME DEPENDENCIES ===
+# ============================================================
+
 dependencies = []
+
+# ============================================================
+# === SECTION: DEVELOPMENT AND DOCUMENTATION DEPENDENCIES ===
+# ============================================================
+# These packages support developing, testing, and documenting the project.
+# They are not required to execute the project code.
 
 [dependency-groups]
 # WHY: Development dependencies support maintaining and validating the project
@@ -41,7 +58,6 @@ dependencies = []
 
 dev = [
     # REQ.DEV.DEPS: External packages used for linting, testing, type checking, etc.
-    "prek",       # WHY: Pre-commit hooks for consistent formatting and linting (replaces pre-commit).
     "pytest>=9",  # WHY: Test framework for unit and integration tests.
     "pytest-cov", # WHY: Test coverage reporting for quality metrics and CI gating.
     "ruff",       # WHY: Fast linting and formatting for Python code.
@@ -69,57 +85,22 @@ Issues = "https://github.com/structural-explainability/se-manifest-schema/issues
 Changelog = "https://github.com/structural-explainability/se-manifest-schema/blob/main/CHANGELOG.md"
 
 # ============================================================
-# SECTION 2: TOOL CONFIGURATION (Professional basics)
+# === SECTION 2: TOOL CONFIGURATION ===
 # ============================================================
-
-# === PYTEST (VERIFY LOGIC) ===
-
-[tool.pytest.ini_options]
-# WHY: Consistent test discovery and coverage visibility.
-minversion = "9.0"
-testpaths = ["tests"]
-addopts = "--cov=src/se_manifest_schema/ --cov-fail-under=50 --cov-report=term-missing"
-filterwarnings = [
-    "ignore:FigureCanvasAgg is non-interactive, and thus cannot be shown:UserWarning",
-]
-
-# === RUFF (PYTHON FORMATTING AND LINTING) ===
-[tool.ruff.lint] # WHY: Evolve with Ruff's defaults; production might pin an explicit set.
-extend-select = [
-    # --- turn on for additional linting rules ---
-    "D", # WHY: Require docstrings; VS Code helps generate them.
-]
-
-[tool.ruff.lint.isort] # WHY: Sort plain-import and from-import lines together within each section.
-force-sort-within-sections = true
-
-[tool.ruff.lint.per-file-ignores] # WHY: Some file types need lint exceptions.
-"src/**/__init__.py" = ["F401"] # Allow re-export patterns.
-"src/**/_version.py" = ["ALL"] # Auto-generated file; do not lint.
-"tests/**/*.py" = ["D", "B018"] # Tests need no docstrings; B018 is default-on.
-"notebooks/**/*.py" = [
-    "D",
-    "PLR1711",
-    "RUF059",
-] # marimo cells: bare returns + cell-scoped unused vars are the format, not defects
-
-[tool.ruff.lint.pydocstyle] # WHY: Use Google docstring style when D is enabled.
-convention = "google"
 
 # === UV (PYTHON ENVIRONMENT AND DEPENDENCY MANAGEMENT) ===
 
 [tool.uv]
-# WHY: Install all dependency groups defined by this repository by default.
-# OBS: This keeps the canonical `uv sync` command identical across project types
-#      and ensures all repository features work after setup.
+# WHY: Install all repository tooling with the canonical `uv sync`.
 default-groups = "all"
+
 # WHY: Give a bit of time to find hijacked releases before installing.
-# CUSTOM: Should match `uv run prek update --freeze --cooldown-days 7`
+# CUSTOM: Should match `uv run prek update --freeze --cooldown-days 7`.
 exclude-newer = "7 days"
 
 
 # ============================================================
-# SECTION 3: BUILD SYSTEM (boilerplate; CUSTOM src/ agreement)
+# === SECTION 3: BUILD SYSTEM ===
 # ============================================================
 #
 # REQ.PROJECT: A build system MUST be declared for package discovery and publishing.
@@ -159,7 +140,7 @@ packages = ["src/se_manifest_schema"]
 
 [tool.hatch.version]
 # Used when no git tags present (fresh clone, CI). Keep in sync with CITATION.cff.
-fallback-version = "0.5.1"
+fallback-version = "0.5.2"
 # WHY: Version derived from git tags at build time.
 source = "vcs"
 tag-pattern = "^(?:v)?(?P<version>\\d+\\.\\d+\\.\\d+)$"

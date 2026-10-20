@@ -13,6 +13,15 @@ and this project adheres to **[Semantic Versioning](https://semver.org/spec/v2.0
 
 ---
 
+## [0.5.2] - 2026-10-20
+
+### Changed
+
+- Updated `manifest-schema.toml` to allow new class.verification repo names like
+  "se-verification-{focus}".
+
+---
+
 ## [0.5.1] - 2026-10-08
 
 ### Changed
@@ -321,7 +330,8 @@ git push origin :refs/tags/vX.Z.Y
 
 ## Links
 
-[Unreleased]: https://github.com/structural-explainability/se-manifest-schema/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/structural-explainability/se-manifest-schema/compare/v0.5.2...HEAD
+[0.5.2]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.5.2
 [0.5.1]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.5.1
 [0.5.0]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.5.0
 [0.4.2]: https://github.com/structural-explainability/se-manifest-schema/releases/tag/v0.4.2

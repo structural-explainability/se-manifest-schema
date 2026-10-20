@@ -8,43 +8,40 @@ from se_manifest_schema.validate_manifest import validate_manifest
 
 
 def _minimal_schema() -> ManifestSchemaData:
-    return cast(
-        ManifestSchemaData,
-        {
-            "manifest": {
-                "identity": {
-                    "schema_required": True,
-                    "schema_allowed": ["se-manifest-2"],
-                    "schema_url_required": True,
-                }
+    return {
+        "manifest": {
+            "identity": {
+                "schema_required": True,
+                "schema_allowed": ["se-manifest-2"],
+                "schema_url_required": True,
+            }
+        },
+        "section": {
+            "repository": {"required": True, "allowed_fields": ["name", "class"]},
+            "scope": {"required": True, "allowed_fields": ["includes", "excludes"]},
+        },
+        "field": {
+            "repository": {
+                "name": {"type": "string", "required": True},
+                "class": {"type": "string", "required": True},
             },
-            "section": {
-                "repository": {"required": True, "allowed_fields": ["name", "class"]},
-                "scope": {"required": True, "allowed_fields": ["includes", "excludes"]},
-            },
-            "field": {
-                "repository": {
-                    "name": {"type": "string", "required": True},
-                    "class": {"type": "string", "required": True},
-                },
-                "scope": {
-                    "includes": {"type": "list[string]", "required": True},
-                    "excludes": {"type": "list[string]", "required": True},
-                },
-            },
-            "class": {
-                "test_class": {
-                    "required_sections": ["repository", "scope"],
-                    "optional_sections": [],
-                    "forbidden_sections": [],
-                }
-            },
-            "validation": {
-                "require_known_sections_only": True,
-                "require_known_fields_only": True,
+            "scope": {
+                "includes": {"type": "list[string]", "required": True},
+                "excludes": {"type": "list[string]", "required": True},
             },
         },
-    )
+        "class": {
+            "test_class": {
+                "required_sections": ["repository", "scope"],
+                "optional_sections": [],
+                "forbidden_sections": [],
+            }
+        },
+        "validation": {
+            "require_known_sections_only": True,
+            "require_known_fields_only": True,
+        },
+    }
 
 
 def _minimal_manifest() -> dict[str, Any]:
@@ -318,73 +315,70 @@ def _authority_manifest() -> dict[str, Any]:
 
 
 def _contract_schema() -> ManifestSchemaData:
-    return cast(
-        ManifestSchemaData,
-        {
-            "manifest": {
-                "identity": {
-                    "schema_required": True,
-                    "schema_allowed": ["se-manifest-2"],
-                    "schema_url_required": True,
-                },
-                "filename": "SE_MANIFEST.toml",
-                "allowed_filenames": ["SE_MANIFEST.toml", "MANIFEST.toml"],
+    return {
+        "manifest": {
+            "identity": {
+                "schema_required": True,
+                "schema_allowed": ["se-manifest-2"],
+                "schema_url_required": True,
             },
-            "section": {
-                "repository": {"required": True, "allowed_fields": ["name", "class"]},
-                "contract": {
-                    "required": True,
-                    "allowed_fields": [
-                        "contract_role",
-                        "contract_authority",
-                        "contract_version",
-                        "consumes_contract_from",
-                    ],
-                },
-            },
-            "field": {
-                "repository": {
-                    "name": {"type": "string", "required": True},
-                    "class": {"type": "string", "required": True},
-                },
-                "contract": {
-                    "contract_role": {
-                        "type": "string",
-                        "required": False,
-                        "constraints": ["known-contract-role"],
-                    },
-                    "contract_authority": {"type": "string", "required": False},
-                    "contract_version": {"type": "string", "required": False},
-                    "consumes_contract_from": {"type": "string", "required": False},
-                },
-            },
-            "class": {
-                "contract": {
-                    "required_sections": ["repository", "contract"],
-                    "optional_sections": [],
-                    "forbidden_sections": [],
-                }
-            },
-            "contract_roles": {
-                "allowed": ["authority", "domain-contract"],
-            },
-            "validation": {
-                "require_known_sections_only": True,
-                "require_known_fields_only": True,
-                "require_manifest_filename_allowed": True,
-                "contract": {
-                    "contract_role_required_for_contract_class": True,
-                    "contract_authority_required_for_contract_class": True,
-                    "contract_version_required_for_contract_class": True,
-                    "contract_role_must_be_known": True,
-                    "contract_authority_must_equal_self": True,
-                    "authority_role_must_not_consume_contract": True,
-                    "domain_contract_role_must_consume_contract": True,
-                    "domain_contract_must_not_consume_self": True,
-                },
+            "filename": "SE_MANIFEST.toml",
+            "allowed_filenames": ["SE_MANIFEST.toml", "MANIFEST.toml"],
+        },
+        "section": {
+            "repository": {"required": True, "allowed_fields": ["name", "class"]},
+            "contract": {
+                "required": True,
+                "allowed_fields": [
+                    "contract_role",
+                    "contract_authority",
+                    "contract_version",
+                    "consumes_contract_from",
+                ],
             },
         },
-    )
+        "field": {
+            "repository": {
+                "name": {"type": "string", "required": True},
+                "class": {"type": "string", "required": True},
+            },
+            "contract": {
+                "contract_role": {
+                    "type": "string",
+                    "required": False,
+                    "constraints": ["known-contract-role"],
+                },
+                "contract_authority": {"type": "string", "required": False},
+                "contract_version": {"type": "string", "required": False},
+                "consumes_contract_from": {"type": "string", "required": False},
+            },
+        },
+        "class": {
+            "contract": {
+                "required_sections": ["repository", "contract"],
+                "optional_sections": [],
+                "forbidden_sections": [],
+            }
+        },
+        "contract_roles": {
+            "allowed": ["authority", "domain-contract"],
+        },
+        "validation": {
+            "require_known_sections_only": True,
+            "require_known_fields_only": True,
+            "require_manifest_filename_allowed": True,
+            "contract": {
+                "contract_role_required_for_contract_class": True,
+                "contract_authority_required_for_contract_class": True,
+                "contract_version_required_for_contract_class": True,
+                "contract_role_must_be_known": True,
+                "contract_authority_must_equal_self": True,
+                "authority_role_must_not_consume_contract": True,
+                "domain_contract_role_must_consume_contract": True,
+                "domain_contract_must_not_consume_self": True,
+            },
+        },
+    }
 
 
 def _domain_contract_manifest() -> dict[str, Any]:
